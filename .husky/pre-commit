@@ -1,0 +1,7 @@
+npm run lint # Ini akan mengecek semua file
+npx lint-staged
+
+if [ $? -ne 0 ]; then
+  echo "Commit failed. Please fix the errors before committing."
+  exit 1
+fi

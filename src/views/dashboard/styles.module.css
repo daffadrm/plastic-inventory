@@ -1,0 +1,168 @@
+.linearRound {
+  &:first-child span {
+    border-start-start-radius: 8px;
+    border-end-start-radius: 8px;
+  }
+  &:last-child span {
+    border-start-end-radius: 8px;
+    border-end-end-radius: 8px;
+  }
+}
+
+.position-sticky-top th {
+  position: sticky;
+  top: 0;
+  background-color: white;
+  z-index: 1; /* Ensure the header stays above table rows */
+}
+
+.stickyFooter {
+  position: sticky;
+  bottom: 0;
+  background-color: white;
+  z-index: 1;
+  /* position: absolute;
+      bottom: 0;
+      width: 100%;
+      background-color: white;
+      z-index: 1;
+      border-top: 1px solid #ccc; */
+}
+
+.customTableInternal {
+  td {
+    padding: 0px 4px !important;
+    height: 36px !important;
+  }
+
+  th:nth-child(1) {
+    /* position: sticky; */
+    background-color: #fff;
+    /* left: 0; */
+    z-index: 30 !important;
+  }
+  th:nth-child(2) {
+    /* position: sticky; */
+    background-color: #fff;
+    /* left: 68px; */
+    z-index: 30 !important;
+  }
+  th:nth-child(3) {
+    /* position: sticky; */
+    background-color: #fff;
+    /* left: 149px; */
+    z-index: 30 !important;
+  }
+  th:nth-child(4) {
+    /* position: sticky; */
+    background-color: #fff;
+    /* left: 265px; */
+    padding-left: 8px !important;
+    z-index: 30 !important;
+    /* width: 166.68px !important;
+      max-width: 166.68px !important;
+      min-width: 166.68px !important; */
+  }
+  th:nth-child(5) {
+    /* position: sticky; */
+    background-color: #fff;
+    /* left: 430px; */
+    padding-left: 8px !important;
+    z-index: 30 !important;
+  }
+  th:nth-child(6) {
+    /* position: sticky; */
+    background-color: #fff;
+    /* left: 492px; */
+    padding-left: 8px !important;
+    z-index: 30 !important;
+  }
+
+  th:nth-child(14),
+  th:nth-child(15),
+  th:nth-child(16) {
+    padding-left: 16px !important;
+  }
+
+  th:first-child {
+    width: 50px;
+    padding-left: 16px !important;
+  }
+
+  td:first-child {
+    padding: 0px 16px 0px 16px !important;
+  }
+
+  td:last-child {
+    padding: 0px 16px 0px 16px !important;
+  }
+
+  td:nth-child(1) {
+    /* position: sticky; */
+    background-color: #fff;
+    /* left: 0; */
+  }
+
+  td:nth-child(2) {
+    /* position: sticky; */
+    background-color: #fff;
+    /* left: 68px; */
+  }
+
+  td:nth-child(3) {
+    /* position: sticky; */
+    background-color: #fff;
+    /* left: 149px; */
+  }
+
+  td:nth-child(4) {
+    /* position: sticky; */
+    background-color: #fff;
+    /* left: 265px; */
+    padding-left: 8px !important;
+    /* width: 166.68px !important;
+      max-width: 166.68px !important;
+      min-width: 166.68px !important; */
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    overflow: hidden;
+  }
+
+  td:nth-child(5) {
+    /* position: sticky; */
+    background-color: #fff;
+    /* left: 430px; */
+    padding-left: 8px !important;
+  }
+
+  td:nth-child(6) {
+    /* position: sticky; */
+    background-color: #fff;
+    /* left: 492px; */
+    padding-left: 8px !important;
+    max-width: 255px !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    overflow: hidden;
+  }
+
+  td:nth-child(7),
+  td:nth-child(9),
+  td:nth-child(12) {
+    padding-left: 16px !important;
+  }
+
+  td:nth-child(12),
+  td:last-child {
+    max-width: 455px !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    overflow: hidden;
+  }
+}
+
+.doublePiechart {
+  * {
+    cursor: pointer !important;
+  }
+}
