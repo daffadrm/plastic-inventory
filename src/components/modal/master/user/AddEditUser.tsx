@@ -1,222 +1,98 @@
 'use client'
 
-import type { FormEvent } from 'react'
 import { useEffect, useState } from 'react'
 
-import {
-  IconButton,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  InputAdornment,
-  Grid
-} from '@mui/material'
+import { useForm, Controller } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid } from '@mui/material'
 import { LoadingButton } from '@mui/lab'
 
 import CustomTextField from '@core/components/mui/TextField'
+import type { UserSchema } from '@/schema/masterUserSchema'
+import { userSchema } from '@/schema/masterUserSchema'
+import ModalConfirmationComponent from '../../confirmation/ModalConfirmation'
 import CustomAutocomplete from '@/@core/components/mui/Autocomplete'
+import { useMasterUserStore } from '@/stores/masterUserStore'
 
-const typeRole = [
-  { label: 'Sales', value: 'Sales' },
-  { label: 'Engineer', value: 'Engineer' },
-  { label: 'Admin', value: 'Admin' }
-]
-
-interface AddEditUserProps {
+interface AddEditUserType {
   open: boolean
   isEditMode: boolean
-  userData?: any
-  onSubmit: (data: any) => void
+  userDetailData?: any
   onCancel: () => void
-  datasOptionCluster: any
-  isLoadingState: boolean
 }
 
-interface ErrorField {
-  email: string
-  phone: string
-  password: string
-  username: string
+const optionRole = [
+  {
+    label: 'Admin',
+    value: 'Admin'
+  },
+  {
+    label: 'Operator',
+    value: 'Operator'
+  },
+  {
+    label: 'User',
+    value: 'User'
+  }
+]
+
+export const defaultValues: UserSchema = {
+  user_id: 0,
+  username: '',
+  full_name: '',
+  email: '',
+  phone_number: '',
+  role: {
+    label: '',
+    value: ''
+  },
+  status: 'Active',
+  profile_picture: null,
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString()
 }
 
-const AddEditUser = ({
-  open,
-  isEditMode,
-  userData,
-  onSubmit,
-  onCancel,
-  datasOptionCluster,
-  isLoadingState
-}: AddEditUserProps) => {
-  const initialState = {
-    username: '',
-    full_name: '',
-    email: '',
-    phone: '',
-    cluster: [],
-    password: '',
-    confirm_password: '',
-    role: ''
+const AddEditUser = ({ open, isEditMode, userDetailData, onCancel }: AddEditUserType) => {
+  const { updateMasterUser } = useMasterUserStore()
+  const [isOpenConfirmationModalState, setIsOpenConfirmationModalState] = useState<boolean>(false)
+
+  const handleConfirmationModal = () => {
+    setIsOpenConfirmationModalState(!isOpenConfirmationModalState)
   }
 
-  const [isPasswordShown, setIsPasswordShown] = useState(false)
-  const [isPasswordConfirmationShown, setIsPasswordConfirmationShown] = useState(false)
-  const [isSubmitted, setIsSubmitted] = useState<boolean>(false)
-
-  const [state, setState] = useState<any>(initialState)
-
-  const [errorField, setErrorField] = useState<ErrorField>({
-    email: '',
-    phone: '',
-    password: '',
-    username: ''
+  const {
+    handleSubmit,
+    control,
+    reset,
+    formState: { errors }
+  } = useForm<UserSchema>({
+    resolver: zodResolver(userSchema),
+    defaultValues,
+    mode: 'onChange'
   })
 
-  const handleClickShowPassword = () => setIsPasswordShown(show => !show)
-  const handleClickShowPasswordConfirmation = () => setIsPasswordConfirmationShown(show => !show)
-
-  const validatePassword = (password: string) => {
-    const minLength = /.{8,}/
-    const hasUppercase = /[A-Z]/
-    const hasLowercase = /[a-z]/
-    const hasNumber = /[0-9]/
-    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/
-
-    return (
-      minLength.test(password) &&
-      hasUppercase.test(password) &&
-      hasLowercase.test(password) &&
-      hasNumber.test(password) &&
-      hasSpecialChar.test(password)
-    )
-  }
-
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  const usernameRegex = /^[a-zA-Z0-9_]{4,20}$/
-
-  const handleChange = (event: any) => {
-    const { name, value } = event.target
-
-    event.persist()
-    setState({ ...state, [name]: value })
-
-    if (name === 'email') {
-      setErrorField(prev => ({
-        ...prev,
-        email: emailRegex.test(value) ? '' : 'Invalid email'
-      }))
-    } else if (name === 'username') {
-      setErrorField(prev => ({
-        ...prev,
-        username: usernameRegex.test(value) ? '' : 'Username must be 4-20 characters, alphanumeric or underscore'
-      }))
-    }
-  }
-
-  const validateForm = (): boolean => {
-    let isValid = true
-    const errors: ErrorField = { email: '', phone: '', password: '', username: '' }
-
-    const isEmptyField = Object.entries(state).some(
-      ([key, value]) =>
-        key !== 'password' && key !== 'confirm_password' && typeof value === 'string' && value?.trim() === ''
-    )
-
-    // const isEmptyField = Object.values(state).some(value => value === '')
-
-    if (isEmptyField) {
-      isValid = false
-    }
-
-    if (!state.email) {
-      errors.email = 'Required'
-      isValid = false
-    } else if (!emailRegex.test(state.email)) {
-      errors.email = 'Invalid email'
-      isValid = false
-    }
-
-    // Validate phone field
-    if (!state.phone) {
-      errors.phone = 'Required'
-      isValid = false
-    }
-
-    if (!state.username) {
-      errors.username = 'Required'
-      isValid = false
-    } else if (!usernameRegex.test(state.username)) {
-      errors.username = 'Username must be 4-20 characters, alphanumeric or underscore'
-      isValid = false
-    }
-
-    if (!isEditMode) {
-      // Password required during creation
-      if (!state.password) {
-        errors.password = 'Required'
-        isValid = false
-      } else if (!validatePassword(state.password)) {
-        errors.password =
-          'Password must be at least 8 characters long and include uppercase, lowercase, number, and special character.'
-        isValid = false
-      }
-    } else if (state.password || state.confirm_password) {
-      // If editing and password fields are provided, validate them
-      if (state.password !== state.confirm_password) {
-        errors.password = 'Password and confirmation password do not match.'
-        isValid = false
-      } else if (!validatePassword(state.password)) {
-        errors.password =
-          'Password must be at least 8 characters long and include uppercase, lowercase, number, and special character.'
-        isValid = false
-      }
-    }
-
-    setErrorField(errors)
-
-    return isValid
-  }
-
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    setIsSubmitted(true)
-
-    if (!validateForm()) {
-      return
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { confirm_password, ...payload } = state
-
-    onSubmit(payload)
+  const handleSubmitForm = async (dataParam: any) => {
+    console.log(dataParam, 'dataParam')
+    updateMasterUser(dataParam?.user.id, dataParam)
+    reset(defaultValues)
+    handleConfirmationModal()
+    onCancel()
   }
 
   useEffect(() => {
-    if (isEditMode && userData) {
-      setState({
-        ...userData,
-        password: '',
-        confirm_password: ''
+    if (userDetailData && open) {
+      reset({
+        ...userDetailData,
+        role: optionRole.find(status => status.value?.toLowerCase() === userDetailData?.role?.toLowerCase()) ?? {
+          label: '',
+          value: ''
+        }
       })
-    } else if (!isEditMode) {
-      // Jika mode add, reset form
-      setState(initialState)
-      setIsSubmitted(false)
-      setErrorField({ email: '', phone: '', password: '', username: '' })
+    } else {
+      reset(defaultValues)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isEditMode, userData])
-
-  useEffect(() => {
-    if (!isEditMode && !open) {
-      setState(initialState)
-      setIsSubmitted(false)
-      setErrorField({ email: '', phone: '', password: '', username: '' })
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, isEditMode])
+  }, [userDetailData, reset, open])
 
   return (
     <Dialog open={open} maxWidth='sm' fullWidth scroll='body'>
@@ -228,176 +104,121 @@ const AddEditUser = ({
           borderBottom: '2px solid #e0e0e0'
         }}
       >
-        {isEditMode ? 'Edit User' : 'Add User'}
+        {isEditMode ? 'Edit Pengguna' : 'Add Pengguna'}
       </DialogTitle>
-      <form noValidate autoComplete='off' onSubmit={event => handleSubmit(event)} className='flex-col gap-6 grid'>
+      <form
+        noValidate
+        autoComplete='off'
+        onSubmit={handleSubmit(handleConfirmationModal)}
+        className='flex-col gap-6 grid'
+      >
         <DialogContent className='mt-5'>
           <Grid container spacing={6}>
-            <Grid item xs={6} sm={6}>
-              <CustomTextField
-                autoFocus
-                fullWidth
-                label='Fullname'
-                name='full_name'
-                onChange={handleChange}
-                value={state.full_name}
-                placeholder='Enter your Fullname'
-                error={isSubmitted && !state?.full_name}
-                helperText={isSubmitted && !state?.full_name && 'Required'}
-              />
-            </Grid>
-            <Grid item xs={6} sm={6}>
-              <CustomTextField
-                fullWidth
-                label='Username'
+            <Grid item xs={12} sm={6}>
+              <Controller
                 name='username'
-                onChange={handleChange}
-                value={state.username}
-                placeholder='Enter your username'
-                disabled={isEditMode}
-                error={!!errorField?.username || (isSubmitted && !state?.username)}
-                helperText={errorField?.username || (isSubmitted && !state?.username && 'Required')}
+                control={control}
+                render={({ field }) => (
+                  <CustomTextField
+                    {...field}
+                    fullWidth
+                    label={
+                      <>
+                        Username <span className='text-red-500'>*</span>
+                      </>
+                    }
+                    placeholder={'daffa'}
+                    error={!!errors.username}
+                    helperText={errors.username?.message}
+                  />
+                )}
               />
             </Grid>
 
-            <Grid item xs={6} sm={6}>
-              <CustomTextField
-                fullWidth
-                label='Email'
+            <Grid item xs={12} sm={6}>
+              <Controller
+                name='full_name'
+                control={control}
+                render={({ field }) => (
+                  <CustomTextField
+                    {...field}
+                    fullWidth
+                    label={
+                      <>
+                        Nama <span className='text-red-500'>*</span>
+                      </>
+                    }
+                    placeholder={'daffa'}
+                    error={!!errors.full_name}
+                    helperText={errors.full_name?.message}
+                  />
+                )}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Controller
                 name='email'
-                type='email'
-                onChange={handleChange}
-                value={state.email}
-                placeholder='Enter your email'
-                error={!!errorField?.email || (isSubmitted && !state.email)}
-                helperText={errorField?.email || (isSubmitted && !state.email && 'Required')}
-
-                // error={isSubmitted && !state?.email}
-                // helperText={isSubmitted && !state?.email && 'Required'}
-              />
-            </Grid>
-
-            <Grid item xs={6} sm={6}>
-              <CustomTextField
-                fullWidth
-                label='NIK'
-                name='phone'
-                onChange={handleChange}
-                value={state.phone}
-                placeholder='Enter your NIK'
-                error={!!errorField?.phone || (isSubmitted && !state.phone)}
-                helperText={errorField?.phone || (isSubmitted && !state.phone && 'Required')}
-
-                // error={isSubmitted && !state?.phone}
-                // helperText={isSubmitted && !state?.phone && 'Required'}
-              />
-            </Grid>
-
-            <Grid item xs={6} sm={6}>
-              <CustomAutocomplete
-                fullWidth
-                options={typeRole || []}
-                getOptionLabel={option => option?.label || ''}
-                onChange={(e, value) => {
-                  setState((prev: any) => ({ ...prev, role: value?.value }))
-                }}
-                value={typeRole?.find(option => option?.label === state?.role) || null}
-                renderInput={params => (
+                control={control}
+                render={({ field }) => (
                   <CustomTextField
-                    placeholder='--Choose Role--'
-                    {...params}
-                    label='Role'
-                    error={isSubmitted && !state?.role}
-                    helperText={isSubmitted && !state?.role && 'Required'}
+                    {...field}
+                    fullWidth
+                    label={
+                      <>
+                        Email <span className='text-red-500'>*</span>
+                      </>
+                    }
+                    placeholder={'daffa@gmail.com'}
+                    error={!!errors.email}
+                    helperText={errors.email?.message}
                   />
                 )}
               />
             </Grid>
-
-            <Grid item xs={6} sm={6}>
-              <CustomAutocomplete
-                multiple
-                fullWidth
-                options={['All Cluster', ...(datasOptionCluster || [])]}
-                getOptionLabel={(option: string) => option || ''}
-                onChange={(e, value) => {
-                  if (value.includes('All Cluster')) {
-                    if (state.cluster.includes('All Cluster')) {
-                      setState((prev: any) => ({
-                        ...prev,
-                        cluster: []
-                      }))
-                    } else {
-                      setState((prev: any) => ({
-                        ...prev,
-                        cluster: datasOptionCluster
-                      }))
-                    }
-                  } else {
-                    setState((prev: any) => ({
-                      ...prev,
-                      cluster: value
-                    }))
-                  }
-                }}
-                value={state?.cluster.length === datasOptionCluster.length ? ['All Cluster'] : state?.cluster || []}
-                renderInput={params => (
+            <Grid item xs={12} sm={6}>
+              <Controller
+                name='phone_number'
+                control={control}
+                render={({ field }) => (
                   <CustomTextField
-                    placeholder='--Choose Cluster--'
-                    {...params}
-                    label='Cluster'
-                    error={isSubmitted && (!Array.isArray(state?.cluster) || state.cluster.length === 0)}
-                    helperText={
-                      isSubmitted && (!Array.isArray(state?.cluster) || state.cluster.length === 0) && 'Required'
+                    {...field}
+                    fullWidth
+                    label={
+                      <>
+                        Nomor Telepon <span className='text-red-500'>*</span>
+                      </>
                     }
-
-                    // error={isSubmitted && !state?.cluster}
-                    // helperText={isSubmitted && !state?.cluster && 'Required'}
+                    placeholder={'082112121212'}
+                    error={!!errors.phone_number}
+                    helperText={errors.phone_number?.message}
                   />
                 )}
               />
             </Grid>
-
-            <Grid item xs={6} sm={6}>
-              <CustomTextField
-                fullWidth
-                label='Password'
-                name='password'
-                onChange={handleChange}
-                placeholder='············'
-                type={isPasswordShown ? 'text' : 'password'}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position='end'>
-                      <IconButton edge='end' onClick={handleClickShowPassword}>
-                        <i className={isPasswordShown ? 'tabler-eye-off' : 'tabler-eye'} />
-                      </IconButton>
-                    </InputAdornment>
-                  )
-                }}
-                error={isSubmitted && !!errorField.password}
-                helperText={errorField.password}
-              />
-            </Grid>
-
-            <Grid item xs={6} sm={6}>
-              <CustomTextField
-                fullWidth
-                label='Confirmation Password'
-                placeholder='············'
-                type={isPasswordConfirmationShown ? 'text' : 'password'}
-                name='confirm_password'
-                value={state.confirm_password}
-                onChange={handleChange}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position='end'>
-                      <IconButton edge='end' onClick={handleClickShowPasswordConfirmation}>
-                        <i className={isPasswordConfirmationShown ? 'tabler-eye-off' : 'tabler-eye'} />
-                      </IconButton>
-                    </InputAdornment>
-                  )
-                }}
+            <Grid item xs={12} sm={6}>
+              <Controller
+                name={'role'}
+                control={control}
+                render={({ field }) => (
+                  <CustomAutocomplete
+                    {...field}
+                    fullWidth
+                    options={optionRole || []}
+                    getOptionLabel={option => option?.label || ''}
+                    value={(field.value && optionRole.find(opt => opt.value === field.value.value)) || null}
+                    isOptionEqualToValue={(option, value) => option?.value === value?.value}
+                    onChange={(_, value) => field.onChange(value)}
+                    renderInput={params => (
+                      <CustomTextField
+                        {...params}
+                        label={'Role Saat Ini'}
+                        placeholder={'Admin'}
+                        error={!!errors?.role}
+                        helperText={errors?.role?.message}
+                      />
+                    )}
+                  />
+                )}
               />
             </Grid>
           </Grid>
@@ -406,11 +227,22 @@ const AddEditUser = ({
           <Button color='primary' onClick={onCancel}>
             Cancel
           </Button>
-          <LoadingButton type='submit' loading={isLoadingState} variant='contained'>
-            {isEditMode ? 'Update' : 'Submit'}
+          <LoadingButton type='submit' variant='contained'>
+            {isEditMode ? 'Perbarui' : 'Simpan'}
           </LoadingButton>
         </DialogActions>
       </form>
+      <ModalConfirmationComponent
+        isOpen={isOpenConfirmationModalState}
+        toggle={handleConfirmationModal}
+        title={'Perbarui Data Pengguna'}
+        warning={'Tindakan ini akan menyimpan perubahan. Apakah Anda yakin ingin melanjutkan?'}
+        icon={'tabler-send'}
+        actionText={'Simpan'}
+        handleClose={() => setIsOpenConfirmationModalState(false)}
+        data={userDetailData}
+        handleRequest={handleSubmit(formData => handleSubmitForm(formData))}
+      />
     </Dialog>
   )
 }

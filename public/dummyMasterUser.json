@@ -1,0 +1,45 @@
+{
+    "data": [
+        {
+            "user_id": 1,
+            "username": "admin01",
+            "full_name": "Adi Nugroho",
+            "email": "adi.nugroho@example.com",
+            "phone_number": "+6281234567001",
+            "role": "Admin",
+            "status": "Active",
+            "profile_picture": null,
+            "createdAt": "2025-07-01 09:00:00",
+            "updatedAt": "2025-07-20 14:30:00"
+        },
+        {
+            "user_id": 2,
+            "username": "operator02",
+            "full_name": "Siti Rahmawati",
+            "email": "siti.rahma@example.com",
+            "phone_number": "+6281234567002",
+            "role": "Operator",
+            "status": "Active",
+            "profile_picture": null,
+            "createdAt": "2025-07-05 10:15:00",
+            "updatedAt": "2025-07-18 11:00:00"
+        },
+        {
+            "user_id": 3,
+            "username": "user03",
+            "full_name": "Budi Santoso",
+            "email": "budi.santoso@example.com",
+            "phone_number": "+6281234567003",
+            "role": "User",
+            "status": "Inactive",
+            "profile_picture": null,
+            "createdAt": "2025-07-10 13:45:00",
+            "updatedAt": "2025-07-19 08:25:00"
+        }
+    ],
+    "meta": {
+        "code": 200,
+        "message": "Successfully",
+        "status": "Successfully"
+    }
+}

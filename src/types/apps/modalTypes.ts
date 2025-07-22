@@ -15,7 +15,7 @@ export type ModalConfirmationProps = {
   toggle: (dataParam: any) => void
   handleRequest: (dataParam?: any) => void
   title?: string
-  warning?: string
+  warning?: any
   icon?: string
   actionText?: string
   data?: any
