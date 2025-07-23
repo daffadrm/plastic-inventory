@@ -1,0 +1,42 @@
+{
+    "data": [
+        {
+            "id": 1,
+            "name": "HD 1001",
+            "category": "Kresek",
+            "satuan": "Pack",
+            "stock": 12,
+            "selling_price": 10000,
+            "purchase_price": 5000,
+            "min_stock": 20,
+            "supplier": "PT Plastik Jaya"
+        },
+        {
+            "id": 2,
+            "name": "Sterofoam Bubur",
+            "category": "Sterofoam",
+            "satuan": "Pcs",
+            "stock": 50,
+            "selling_price": 10000,
+            "purchase_price": 5000,
+            "min_stock": 20,
+            "supplier": "PT Plastik Jaya"
+        },
+        {
+            "id": 3,
+            "name": "Mika Donat",
+            "category": "Mika",
+            "satuan": "Pcs",
+            "stock": 100,
+            "selling_price": 10000,
+            "purchase_price": 5000,
+            "min_stock": 20,
+            "supplier": "PT Plastik Jaya"
+        }
+    ],
+    "meta": {
+        "code": 200,
+        "message": "Successfully",
+        "status": "Successfully"
+    }
+}

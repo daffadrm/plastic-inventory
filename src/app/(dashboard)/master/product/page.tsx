@@ -1,5 +1,5 @@
-import MapOverview from '@/views/map/MapOverview'
+import { MasterProductOverview } from '@/views/master/product/MasterProductOverview'
 
 export default function ProductPage() {
-  return <MapOverview />
+  return <MasterProductOverview />
 }
