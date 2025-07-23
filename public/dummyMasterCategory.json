@@ -1,0 +1,27 @@
+{
+    "data": [
+        {
+            "id": 1,
+            "name": "Kresek",
+            "description": "Kantong plastik",
+            "status": "Aktif"
+        },
+        {
+            "id": 2,
+            "name": "Sterofoam",
+            "description": "Wadah makanan",
+            "status": "Aktif"
+        },
+        {
+            "id": 3,
+            "name": "Mika",
+            "description": "Ukuran mika berbagai jenis",
+            "status": "Tidak Aktif"
+        }
+    ],
+    "meta": {
+        "code": 200,
+        "message": "Successfully",
+        "status": "Successfully"
+    }
+}
