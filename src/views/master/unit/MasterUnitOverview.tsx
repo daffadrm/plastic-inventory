@@ -392,7 +392,7 @@ export const MasterUnitOverview = () => {
       <ModalConfirmationComponent
         isOpen={isOpenConfirmationModalState}
         toggle={() => handleConfirmationModal(selectedId)}
-        title='Hapus Produk'
+        title='Hapus Unit'
         warning={
           <>
             Aksi ini akan menghapus <strong>{selectedId?.name}</strong>. Apakah anda yakin?
