@@ -2,10 +2,10 @@ import { create } from 'zustand'
 
 import { useSnackbarStore } from './snackbarStore'
 
-import type { MasterProductStore, QueryParams } from '@/types/apps/masterProductTypes'
-import { getMasterProductList, updateMasterProduct } from '@/app/server/master/product'
+import type { MasterUnitStore, QueryParams } from '@/types/apps/masterUnitTypes'
+import { getMasterUnitList, updateMasterUnit } from '@/app/server/master/unit'
 
-export const useMasterProductStore = create<MasterProductStore>((set, get) => ({
+export const useMasterUnitsStore = create<MasterUnitStore>((set, get) => ({
   isLoading: false,
   isError: false,
   dataList: null,
@@ -23,7 +23,7 @@ export const useMasterProductStore = create<MasterProductStore>((set, get) => ({
       ...params
     })),
 
-  fetchMasterProduct: async (
+  fetchMasterUnit: async (
     overrideParams?: Partial<{
       page: number
       limit: number
@@ -45,7 +45,7 @@ export const useMasterProductStore = create<MasterProductStore>((set, get) => ({
     }
 
     try {
-      const response = await getMasterProductList(finalParams)
+      const response = await getMasterUnitList(finalParams)
 
       set({ dataList: response?.data || null })
     } catch (err: any) {
@@ -58,16 +58,16 @@ export const useMasterProductStore = create<MasterProductStore>((set, get) => ({
     }
   },
 
-  updateMasterProduct: async (data: any, id: string) => {
-    const { fetchMasterProduct } = get()
+  updateMasterUnit: async (data: any, id: string) => {
+    const { fetchMasterUnit } = get()
 
     set({ isLoadingUpdate: true })
 
     try {
-      const response = await updateMasterProduct(data, id)
+      const response = await updateMasterUnit(data, id)
 
       useSnackbarStore.getState().showSnackbar(response?.meta?.message || 'update berhasil', 'success')
-      await fetchMasterProduct({ land_id: id })
+      await fetchMasterUnit({ land_id: id })
 
       return true
     } catch (err: any) {

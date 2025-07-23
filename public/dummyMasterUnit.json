@@ -1,0 +1,65 @@
+{
+    "data": [
+        {
+            "id": 1,
+            "name": "Piece",
+            "simbol": "Pcs",
+            "type": "Unit",
+            "description": "Satuan terkecil fisik"
+        },
+        {
+            "id": 2,
+            "name": "Pack",
+            "simbol": "Pack",
+            "type": "Unit",
+            "description": "Berisi beberapa pcs"
+        },
+        {
+            "id": 3,
+            "name": "Kilogram",
+            "simbol": "Kg",
+            "type": "Berat",
+            "description": "Satuan berat"
+        },
+        {
+            "id": 4,
+            "name": "Gram",
+            "simbol": "Gr",
+            "type": "Berat",
+            "description": "Satuan berat kecil"
+        },
+        {
+            "id": 5,
+            "name": "Liter",
+            "simbol": "L",
+            "type": "Volume",
+            "description": "Untuk cairan"
+        },
+        {
+            "id": 6,
+            "name": "Milimiter",
+            "simbol": "ml",
+            "type": "Volume",
+            "description": "1 Liter = 1000 ml"
+        },
+        {
+            "id": 7,
+            "name": "Lusin",
+            "simbol": "lusin",
+            "type": "Unit",
+            "description": "12 Pcs"
+        },
+        {
+            "id": 8,
+            "name": "Dus",
+            "simbol": "dus",
+            "type": "Unit",
+            "description": "Kemasan karton"
+        }
+    ],
+    "meta": {
+        "code": 200,
+        "message": "Successfully",
+        "status": "Successfully"
+    }
+}

@@ -37,9 +37,9 @@ import CustomTextField from '@/@core/components/mui/TextField'
 import CustomSnackbar from '@/components/snackbar/CustomSnackbar'
 import ModalConfirmationComponent from '@/components/modal/confirmation/ModalConfirmation'
 import useDebounce from '@/@core/hooks/usedebounce'
-import type { MasterProductTableType } from '@/types/apps/masterProductTypes'
-import { useMasterProductStore } from '@/stores/masterProductStore'
-import AddEditProduct from '@/components/modal/master/product/AddEditProduct'
+import type { MasterUnitTableType } from '@/types/apps/masterUnitTypes'
+import { useMasterUnitsStore } from '@/stores/masterUnitStore'
+import AddEditUnit from '@/components/modal/master/unit/AddEditUnit'
 
 declare module '@tanstack/table-core' {
   interface FilterFns {
@@ -64,15 +64,15 @@ const fuzzyFilter: FilterFn<any> = (row, columnId, value, addMeta) => {
 }
 
 // Column Definitions
-const columnHelper = createColumnHelper<MasterProductTableType>()
+const columnHelper = createColumnHelper<MasterUnitTableType>()
 
-export const MasterProductOverview = () => {
+export const MasterUnitOverview = () => {
   const isFirstRender = useRef(true)
   const [rowSelection, setRowSelection] = useState({})
-  const [productState, setProductState] = useState<MasterProductTableType[]>([])
+  const [productState, setProductState] = useState<MasterUnitTableType[]>([])
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
-  const [selectedProduct, setSelectedProduct] = useState<any>(null)
+  const [selectedUnits, setSelectedUnits] = useState<any>(null)
   const [isOpenConfirmationModalState, setIsOpenConfirmationModalState] = useState<boolean>(false)
   const [selectedId, setSelectedId] = useState<any>()
   const [searchValue, setSearchValue] = useState<string>('')
@@ -81,17 +81,8 @@ export const MasterProductOverview = () => {
   const [snackbarMessage, setSnackbarMessage] = useState<string>('')
   const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success')
 
-  const {
-    dataList,
-    isLoading,
-    fetchMasterProduct,
-    setQueryParams,
-    order_direction,
-    limit,
-    page,
-    order_column,
-    search
-  } = useMasterProductStore()
+  const { dataList, isLoading, fetchMasterUnit, setQueryParams, order_direction, limit, page, order_column, search } =
+    useMasterUnitsStore()
 
   console.log(dataList, 'dataList')
 
@@ -108,14 +99,14 @@ export const MasterProductOverview = () => {
     [setOpenSnackbar, setSnackbarMessage, setSnackbarSeverity]
   )
 
-  const handleAddProduct = () => {
-    setSelectedProduct(null) // Reset data pengguna
+  const handleAddUnit = () => {
+    setSelectedUnits(null) // Reset data pengguna
     setIsEditMode(false)
     setIsDialogOpen(true)
   }
 
-  const handleEditProduct = (assetGroup: any) => {
-    setSelectedProduct(assetGroup)
+  const handleEditProduct = (units: any) => {
+    setSelectedUnits(units)
     setIsEditMode(true)
     setIsDialogOpen(true)
   }
@@ -139,7 +130,7 @@ export const MasterProductOverview = () => {
     setSelectedId(userParam)
   }, [])
 
-  const handleDeleteProduct = useCallback(() => {
+  const handleDeleteUnits = useCallback(() => {
     try {
       handleSnackbar('success', 'Success Delete Asset Group')
 
@@ -156,12 +147,8 @@ export const MasterProductOverview = () => {
     setSearchValue(event?.target?.value)
   }, [])
 
-  // useEffect(() => {
-  //   fetchDataAssetGroup()
-  // }, [paramState])
-
   useEffect(() => {
-    fetchMasterProduct({ limit, page, order_column, order_direction })
+    fetchMasterUnit({ limit, page, order_column, order_direction })
   }, [limit, page, order_column, order_direction, search])
 
   useEffect(() => {
@@ -177,18 +164,12 @@ export const MasterProductOverview = () => {
       return
     }
 
-    // setParamState(prev => ({
-    //   ...prev,
-    //   page: 1,
-    //   search: debouncedSearchTerm
-    // }))
-
     setQueryParams({ search: debouncedSearchTerm, page: 1 })
 
     table.setPageIndex(0)
   }, [debouncedSearchTerm])
 
-  const columns = useMemo<ColumnDef<MasterProductTableType, any>[]>(
+  const columns = useMemo<ColumnDef<MasterUnitTableType, any>[]>(
     () => [
       {
         id: 'action',
@@ -217,48 +198,24 @@ export const MasterProductOverview = () => {
         header: 'Nama',
         cell: ({ row }) => <Typography className='text-xs'>{`${row.original.name || '-'}`}</Typography>
       }),
-      columnHelper.accessor('category', {
-        header: 'Kategori',
-        cell: ({ row }) => <Typography className='text-xs'>{`${row.original.category || '-'}`}</Typography>
+      columnHelper.accessor('simbol', {
+        header: 'Simbol',
+        cell: ({ row }) => <Typography className='text-xs'>{`${row.original.simbol || '-'}`}</Typography>
       }),
-      columnHelper.accessor('satuan', {
-        header: 'Satuan',
-        cell: ({ row }) => <Typography className='text-xs'>{`${row.original.satuan || '-'}`}</Typography>
+      columnHelper.accessor('type', {
+        header: 'Type',
+        cell: ({ row }) => <Typography className='text-xs'>{`${row.original.type || '-'}`}</Typography>
       }),
-      columnHelper.accessor('stock', {
-        header: 'Stok',
-        cell: ({ row }) => (
-          <Typography className='text-xs text-right'>{`${row.original.stock?.toLocaleString() || '-'}`}</Typography>
-        )
-      }),
-      columnHelper.accessor('selling_price', {
-        header: 'Harga Jual',
-        cell: ({ row }) => (
-          <Typography className='text-xs text-right'>{`Rp. ${row.original.selling_price?.toLocaleString() || '-'}`}</Typography>
-        )
-      }),
-      columnHelper.accessor('purchase_price', {
-        header: 'Harga Beli',
-        cell: ({ row }) => (
-          <Typography className='text-xs text-right'>{`RP. ${row.original.purchase_price?.toLocaleString() || '-'}`}</Typography>
-        )
-      }),
-      columnHelper.accessor('min_stock', {
-        header: 'Min Stok',
-        cell: ({ row }) => (
-          <Typography className='text-xs text-right'>{`${row.original.min_stock?.toLocaleString() || '-'}`}</Typography>
-        )
-      }),
-      columnHelper.accessor('supplier', {
-        header: 'Supplier',
-        cell: ({ row }) => <Typography className='text-xs'>{`${row.original.supplier || '-'}`}</Typography>
+      columnHelper.accessor('description', {
+        header: 'Deskripsi',
+        cell: ({ row }) => <Typography className='text-xs'>{`${row.original.description || '-'}`}</Typography>
       })
     ],
     []
   )
 
   const table = useReactTable({
-    data: productState as MasterProductTableType[],
+    data: productState as MasterUnitTableType[],
     columns,
     filterFns: {
       fuzzy: fuzzyFilter
@@ -319,10 +276,10 @@ export const MasterProductOverview = () => {
               <Button
                 startIcon={<i className={'tabler-plus text-[18px]'} />}
                 variant='contained'
-                onClick={handleAddProduct}
+                onClick={handleAddUnit}
                 className='ml-auto text-nowrap items-center gap-0 rounded-md xl:text-sm lg:text-xs md:text-[14px] sm:text-[11px] mb-2 py-1'
               >
-                Produk
+                Unit
               </Button>
             </div>
             <div
@@ -420,10 +377,10 @@ export const MasterProductOverview = () => {
           </Card>
         </div>
       </div>
-      <AddEditProduct
+      <AddEditUnit
         open={isDialogOpen}
         isEditMode={isEditMode}
-        productDetailData={selectedProduct}
+        unitDetailData={selectedUnits}
         onCancel={handleCloseDialog}
       />
       <CustomSnackbar
@@ -445,7 +402,7 @@ export const MasterProductOverview = () => {
         actionText='Hapus'
         handleClose={() => setIsOpenConfirmationModalState(false)}
         data={selectedId}
-        handleRequest={handleDeleteProduct}
+        handleRequest={handleDeleteUnits}
       />
     </Card>
   )
