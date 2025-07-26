@@ -1,0 +1,57 @@
+{
+    "data": [
+        {
+            "id": 1,
+            "product_id": "P001",
+            "product_name": "Mika",
+            "from_unit": "Dus",
+            "to_unit": "Pcs",
+            "multiplier": "20"
+        },
+        {
+            "id": 2,
+            "product_id": "P002",
+            "product_name": "Mika",
+            "from_unit": "Pack",
+            "to_unit": "Pcs",
+            "multiplier": "5"
+        },
+        {
+            "id": 3,
+            "product_id": "P003",
+            "product_name": "Thinwall",
+            "from_unit": "Dus",
+            "to_unit": "Pcs",
+            "multiplier": "200"
+        },
+        {
+            "id": 4,
+            "product_id": "P004",
+            "product_name": "Thinwall",
+            "from_unit": "Pack",
+            "to_unit": "Pcs",
+            "multiplier": "10"
+        },
+        {
+            "id": 5,
+            "product_id": "P005",
+            "product_name": "Plastik 1001",
+            "from_unit": "Pack",
+            "to_unit": "Pcs",
+            "multiplier": "5"
+        },
+        {
+            "id": 6,
+            "product_id": "P006",
+            "product_name": "Plastik Bawang",
+            "from_unit": "Pack",
+            "to_unit": "Pcs",
+            "multiplier": "5"
+        }
+    ],
+    "meta": {
+        "code": 200,
+        "message": "Successfully",
+        "status": "Successfully"
+    }
+}

@@ -88,6 +88,9 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
           <MenuItem href='/master/category' icon={<i className='tabler-category' />}>
             Kategori
           </MenuItem>
+          <MenuItem href='/master/conversion' icon={<i className='tabler-chart-funnel' />}>
+            Konversi
+          </MenuItem>
           <MenuItem href='/master/user' icon={<i className='tabler-user' />}>
             Pengguna
           </MenuItem>
