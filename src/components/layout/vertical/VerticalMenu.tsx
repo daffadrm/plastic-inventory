@@ -8,7 +8,7 @@ import PerfectScrollbar from 'react-perfect-scrollbar'
 import type { VerticalMenuContextProps } from '@menu/components/vertical-menu/Menu'
 
 // Component Imports
-import { Menu, MenuItem } from '@menu/vertical-menu'
+import { Menu, MenuItem, SubMenu } from '@menu/vertical-menu'
 
 // Hook Imports
 import useVerticalNav from '@menu/hooks/useVerticalNav'
@@ -72,15 +72,26 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
         <MenuItem href='/dashboard' icon={<i className='tabler-home' />}>
           Dashboard
         </MenuItem>
-        <MenuItem href='/map' icon={<i className='tabler-map-search' />}>
-          Map
+        <MenuItem href='/items-out' icon={<i className='tabler-arrow-narrow-up' />}>
+          Barang Keluar
         </MenuItem>
-        <MenuItem href='/activity-category' icon={<i className='tabler-clipboard-data' />}>
-          Aktivitas dan Kategori
+        <MenuItem href='/items-in' icon={<i className='tabler-arrow-narrow-down' />}>
+          Barang Masuk
         </MenuItem>
-        <MenuItem href='/land' icon={<i className='tabler-squares' />}>
-          List Bidang
-        </MenuItem>
+        <SubMenu label={'Master'} icon={<i className='tabler-settings' />}>
+          <MenuItem href='/master/product' icon={<i className='tabler-database-star' />}>
+            Produk
+          </MenuItem>
+          <MenuItem href='/master/unit' icon={<i className='tabler-arrows-shuffle' />}>
+            Unit
+          </MenuItem>
+          <MenuItem href='/master/category' icon={<i className='tabler-category' />}>
+            Kategori
+          </MenuItem>
+          <MenuItem href='/master/user' icon={<i className='tabler-user' />}>
+            Pengguna
+          </MenuItem>
+        </SubMenu>
       </Menu>
       {/* <Menu
         popoutMenuOffset={{ mainAxis: 23 }}
