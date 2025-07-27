@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import {
   Box,
@@ -23,6 +23,18 @@ import {
 import { dummyProducts } from './product'
 import CustomAutocomplete from '@/@core/components/mui/Autocomplete'
 import CustomTextField from '@/@core/components/mui/TextField'
+import { useSnackbarStore } from '@/stores/snackbarStore'
+
+type Unit = {
+  id: number
+  name: string
+}
+
+type Conversion = {
+  from_unit: Unit
+  to_unit: Unit
+  multiplier: number
+}
 
 type Product = {
   id: number
@@ -31,16 +43,27 @@ type Product = {
   url_image: string
   price: number
   stock: number
+  base_unit: Unit
+  conversions: Conversion[]
 }
 
 type OrderItem = {
   product: Product
   quantity: number
+  unit: string
+  conversion: {
+    unit: string
+    multiplier: number
+  }
 }
 
 export default function ItemsInOverview() {
+  const autocompleteRef = useRef<any>(null)
   const [orders, setOrders] = useState<OrderItem[]>([])
   const [products, setProducts] = useState<Product[]>([])
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  const [inputValue, setInputValue] = useState('')
+
   const [confirmDeleteIndex, setConfirmDeleteIndex] = useState<number | null>(null)
 
   //   const token = 'your_token_here'
@@ -57,9 +80,13 @@ export default function ItemsInOverview() {
 
   const increment = (index: number) => {
     setOrders(prev =>
-      prev.map((item, i) =>
-        i === index && item.quantity < item.product.stock ? { ...item, quantity: item.quantity + 1 } : item
-      )
+      prev.map((item, i) => {
+        if (i !== index) return item
+
+        const newQty = item.quantity + 1
+
+        return { ...item, quantity: newQty }
+      })
     )
   }
 
@@ -86,40 +113,49 @@ export default function ItemsInOverview() {
   const addProductToOrder = (product: Product) => {
     const index = orders.findIndex(o => o.product.id === product.id)
 
+    const defaultUnit = product.base_unit.name
+
+    // Biasanya base unit tidak punya entry konversi dari dirinya sendiri
+    const defaultConversion = {
+      unit: defaultUnit,
+      multiplier: 1
+    }
+
     if (index !== -1) {
-      setOrders(prev =>
-        prev.map((item, i) =>
-          i === index
-            ? {
-                ...item,
-                quantity: item.quantity < product.stock ? item.quantity + 1 : item.quantity
-              }
-            : item
-        )
-      )
+      setOrders(prev => prev.map((item, i) => (i === index ? { ...item, quantity: item.quantity + 1 } : item)))
     } else {
-      setOrders(prev => [...prev, { product, quantity: 1 }])
+      setOrders(prev => [
+        ...prev,
+        {
+          product,
+          quantity: 1,
+          unit: defaultUnit,
+          conversion: defaultConversion
+        }
+      ])
     }
   }
 
   const handleSaveOrder = () => {
     if (orders.length === 0) {
-      alert('Order is empty.')
+      useSnackbarStore.getState().showSnackbar('Tidak ada transaksi!', 'error')
 
       return
     }
 
     const payload = orders.map(item => ({
       product_id: item.product.id,
-      quantity: item.quantity
+      quantity: item.quantity * (item.conversion?.multiplier || 1)
     }))
 
     console.log('Saving order:', payload)
 
+    setOrders([])
+
     // Misal: panggil API di sini
     // await axios.post('/api/orders', { orders: payload })
 
-    alert('Order saved successfully!')
+    useSnackbarStore.getState().showSnackbar('Barang berhasil ditambahkan!', 'success')
   }
 
   return (
@@ -130,11 +166,19 @@ export default function ItemsInOverview() {
         </Typography>
         <CustomAutocomplete
           fullWidth
+          ref={autocompleteRef}
           options={products}
+          value={selectedProduct}
+          inputValue={inputValue}
+          onInputChange={(_, newInputValue) => {
+            setInputValue(newInputValue)
+          }}
           getOptionLabel={option => option.name}
           onChange={(_, value) => {
             if (value) {
               addProductToOrder(value)
+              setSelectedProduct(null)
+              setInputValue('')
             }
           }}
           isOptionEqualToValue={(option, value) => option.id === value.id}
@@ -147,6 +191,7 @@ export default function ItemsInOverview() {
             <TableRow>
               <TableCell>Produk</TableCell>
               <TableCell>Jumlah</TableCell>
+              <TableCell>Satuan</TableCell>
               <TableCell>Harga Unit</TableCell>
               <TableCell>Total Harga</TableCell>
             </TableRow>
@@ -176,19 +221,59 @@ export default function ItemsInOverview() {
                     <Button size='small' variant='outlined' onClick={() => decrement(index)}>
                       -
                     </Button>
-                    <Typography>{order.quantity}</Typography>
-                    <Button
+                    <CustomTextField
+                      type='number'
                       size='small'
-                      variant='outlined'
-                      onClick={() => increment(index)}
-                      disabled={order.quantity >= order.product.stock}
-                    >
+                      value={order.quantity}
+                      inputProps={{ min: 1 }}
+                      onChange={e => {
+                        const value = parseInt(e.target.value, 10)
+
+                        if (!isNaN(value) && value >= 1) {
+                          setOrders(prev =>
+                            prev.map((item, i) => {
+                              if (i !== index) return item
+
+                              return { ...item, quantity: value }
+                            })
+                          )
+                        }
+                      }}
+                      sx={{ width: 100, mx: 1 }}
+                    />
+                    <Button size='small' variant='outlined' onClick={() => increment(index)}>
                       +
                     </Button>
                   </Stack>
                 </TableCell>
+                <TableCell>
+                  <CustomAutocomplete
+                    size='small'
+                    options={[
+                      { unit: order.product.base_unit.name, multiplier: 1 }, // base unit
+                      ...order.product.conversions.map(conv => ({
+                        unit: conv.from_unit.name,
+                        multiplier: conv.multiplier
+                      }))
+                    ]}
+                    getOptionLabel={option => option.unit}
+                    value={order.conversion}
+                    onChange={(_, value) => {
+                      if (value) {
+                        setOrders(prev =>
+                          prev.map((item, i) => (i === index ? { ...item, unit: value.unit, conversion: value } : item))
+                        )
+                      }
+                    }}
+                    isOptionEqualToValue={(option, value) => option.unit === value.unit}
+                    renderInput={params => <CustomTextField {...params} placeholder='Satuan' size='small' />}
+                    sx={{ width: 100 }}
+                  />
+                </TableCell>
                 <TableCell>Rp {order.product.price.toLocaleString('id-ID')}</TableCell>
-                <TableCell>Rp {(order.quantity * order.product.price).toLocaleString('id-ID')}</TableCell>
+                <TableCell>
+                  Rp {(order.quantity * order.conversion.multiplier * order.product.price).toLocaleString('id-ID')}
+                </TableCell>{' '}
               </TableRow>
             ))}
           </TableBody>
@@ -200,7 +285,7 @@ export default function ItemsInOverview() {
           Total: Rp {totalPrice.toLocaleString('id-ID')}
         </Typography>
         <Button variant='contained' color='primary' onClick={handleSaveOrder}>
-          Save Order
+          Simpan
         </Button>
       </Box>
 
