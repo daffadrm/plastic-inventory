@@ -1,0 +1,27 @@
+{
+    "data": [
+        {
+            "number_transaction": "TRC-001",
+            "name_product": "Kantong plastik",
+            "quantity": "123",
+            "unit": "pcs",
+            "type": "Barang Keluar",
+            "created_by": "Operator",
+            "created_at": 1234123111
+        },
+        {
+            "number_transaction": "TRC-002",
+            "name_product": "Kantong plastik",
+            "quantity": "1",
+            "unit": "pcs",
+            "type": "Barang Masuk",
+            "created_by": "Admin",
+            "created_at": 1234123111
+        }
+    ],
+    "meta": {
+        "code": 200,
+        "message": "Successfully",
+        "status": "Successfully"
+    }
+}
