@@ -17,12 +17,11 @@ import Paper from '@mui/material/Paper'
 import ClickAwayListener from '@mui/material/ClickAwayListener'
 import MenuList from '@mui/material/MenuList'
 import Typography from '@mui/material/Typography'
-import Divider from '@mui/material/Divider'
-import MenuItem from '@mui/material/MenuItem'
 import Button from '@mui/material/Button'
 
 // Hook Imports
 import { useSettings } from '@core/hooks/useSettings'
+import { useUser } from '@/@core/contexts/userContext'
 
 // Styled component for badge content
 const BadgeContentSpan = styled('span')({
@@ -45,6 +44,7 @@ const UserDropdown = () => {
   const router = useRouter()
 
   const { settings } = useSettings()
+  const { dataUser } = useUser()
 
   const handleDropdownOpen = () => {
     !open ? setOpen(true) : setOpen(false)
@@ -63,7 +63,8 @@ const UserDropdown = () => {
   }
 
   const handleUserLogout = async () => {
-    // Redirect to login page
+    localStorage.removeItem('iv')
+    localStorage.removeItem('token')
     router.push('/login')
   }
 
@@ -78,8 +79,8 @@ const UserDropdown = () => {
       >
         <Avatar
           ref={anchorRef}
-          alt='John Doe'
-          src='/images/avatars/1.png'
+          alt={dataUser?.user?.fullname || '-'}
+          src='/images/avatars.png'
           onClick={handleDropdownOpen}
           className='cursor-pointer bs-[38px] is-[38px]'
         />
@@ -103,24 +104,18 @@ const UserDropdown = () => {
               <ClickAwayListener onClickAway={e => handleDropdownClose(e as MouseEvent | TouchEvent)}>
                 <MenuList>
                   <div className='flex items-center plb-2 pli-6 gap-2' tabIndex={-1}>
-                    <Avatar alt='John Doe' src='/images/avatars/1.png' />
+                    <Avatar alt={dataUser?.user?.fullname || '-'} src='/images/avatars.png' />
                     <div className='flex items-start flex-col'>
                       <Typography className='font-medium' color='text.primary'>
-                        John Doe
+                        {dataUser?.user?.fullname || '-'}
                       </Typography>
-                      <Typography variant='caption'>admin@mda.com</Typography>
+                      <Typography variant='caption'>{dataUser?.user?.role || '-'}</Typography>
                     </div>
                   </div>
-                  <Divider className='mlb-1' />
-                  <MenuItem className='mli-2 gap-3' onClick={e => handleDropdownClose(e)}>
-                    <i className='tabler-user' />
-                    <Typography color='text.primary'>My Profile</Typography>
-                  </MenuItem>
                   <div className='flex items-center plb-2 pli-3'>
                     <Button
                       fullWidth
                       variant='contained'
-                      color='error'
                       size='small'
                       endIcon={<i className='tabler-logout' />}
                       onClick={handleUserLogout}

@@ -21,14 +21,12 @@ import { LoadingButton } from '@mui/lab'
 
 import { Divider } from '@mui/material'
 
-import VuexyLogo from '@core/svg/Logo'
-
 import CustomTextField from '@core/components/mui/TextField'
 
 import AuthIllustrationWrapper from './AuthIllustrationWrapper'
 import { postLogin } from '@/app/server/auth'
 import { decryptData, encryptData } from '@/utils/crypto'
-import CustomSnackbar from '@/components/snackbar/CustomSnackbar'
+import { useSnackbarStore } from '@/stores/snackbarStore'
 
 const ivGenerate = crypto.randomBytes(16)?.toString('hex')
 
@@ -39,15 +37,8 @@ const Login = () => {
   const router = useRouter()
   const [isPasswordShown, setIsPasswordShown] = useState(false)
   const [isLoadingState, setIsLoadingState] = useState<boolean>(false)
-  const [openSnackbar, setOpenSnackbar] = useState<boolean>(false)
-  const [snackbarMessage, setSnackbarMessage] = useState<string>('')
-  const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success')
 
   const handleClickShowPassword = () => setIsPasswordShown(show => !show)
-
-  const handleCloseSnackbar = () => {
-    setOpenSnackbar(false)
-  }
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -59,29 +50,32 @@ const Login = () => {
       const username = (form.elements.namedItem('username') as HTMLInputElement).value
       const password = (form.elements.namedItem('password') as HTMLInputElement).value
 
+      if (!username && !password) {
+        useSnackbarStore.getState().showSnackbar('Lengkapi data dahulu', 'error')
+
+        return
+      }
+
       const payload = {
-        username,
+        identifier: username,
         password
       }
 
       const response = await postLogin(payload)
 
-      const stringifyResponse = JSON?.stringify(response)
+      const stringifyResponse = JSON?.stringify(response?.data)
 
       const encrypt = encryptData(ivGenerate, stringifyResponse)
 
       localStorage.setItem('iv', ivGenerate)
       localStorage.setItem('token', encrypt)
 
-      setSnackbarMessage(response?.meta?.message || 'Login successfully')
-      setSnackbarSeverity('success')
-      setIsLoadingState(false)
+      useSnackbarStore.getState().showSnackbar(response?.meta?.message || 'Login successfully', 'success')
 
-      setTimeout(() => router.push('/work-order'), 500)
+      setTimeout(() => router.push('/dashboard'), 500)
     } catch (error: any) {
-      setSnackbarMessage(error?.message || 'Error')
-      setSnackbarSeverity('error')
-      setOpenSnackbar(true)
+      useSnackbarStore.getState().showSnackbar(error?.message || 'Login error', 'error')
+
       console.error(error)
     } finally {
       setIsLoadingState(false)
@@ -95,7 +89,7 @@ const Login = () => {
 
   if (encryptedToken) {
     try {
-      token = encryptedToken ? JSON?.parse(encryptedToken)?.data?.token : null
+      token = encryptedToken ? JSON?.parse(encryptedToken)?.token : null
     } catch (error) {
       localStorage.removeItem('iv')
       localStorage.removeItem('token')
@@ -103,16 +97,15 @@ const Login = () => {
   }
 
   if (token) {
-    redirect('/work-order')
+    redirect('/dashboard')
   } else {
     return (
       <div className='flex justify-center items-center h-screen relative'>
         <AuthIllustrationWrapper>
           <Card className='flex flex-col sm:is-[450px]'>
             <CardContent className='sm:!p-12 text-center'>
-              <VuexyLogo width={130} className='text-4xl text-primary mb-2' />
               <div className='flex flex-col gap-1 mbe-6'>
-                <Typography variant='h4'>{`Work Order Management`}</Typography>
+                <Typography variant='h4'>{`Plastik Inventory System`}</Typography>
               </div>
               <form
                 noValidate
@@ -125,7 +118,7 @@ const Login = () => {
                   fullWidth
                   label='Username'
                   name='username'
-                  placeholder='Enter your username'
+                  placeholder='Masukkan username anda'
                 />
                 <CustomTextField
                   fullWidth
@@ -183,12 +176,6 @@ const Login = () => {
             </CardContent>
           </Card>
         </AuthIllustrationWrapper>
-        <CustomSnackbar
-          openSnackbar={openSnackbar}
-          snackbarSeverity={snackbarSeverity}
-          snackbarMessage={snackbarMessage}
-          handleCloseSnackbar={handleCloseSnackbar}
-        />
       </div>
     )
   }

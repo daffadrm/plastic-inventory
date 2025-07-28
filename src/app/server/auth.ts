@@ -2,7 +2,7 @@ import { apiService } from './apiService'
 
 const versioning1 = process.env.NEXT_PUBLIC_API_V1
 
-export const postLogin = async (data: { username: string; password: string }): Promise<any> => {
+export const postLogin = async (data: { identifier: string; password: string }): Promise<any> => {
   const response = apiService(`${versioning1}/auth/login/`, 'POST', data)
 
   return response
