@@ -10,7 +10,6 @@ const ivGenerate = crypto.randomBytes(16)?.toString('hex')
 
 const defaultURL = process.env.NEXT_PUBLIC_DEFAULT_API
 const versioning1 = process.env.NEXT_PUBLIC_API_V1
-const env = process.env.NEXT_PUBLIC_ENV
 
 export const apiService = async (
   endpoint: string,
@@ -18,8 +17,6 @@ export const apiService = async (
   data?: any,
   headers?: any
 ) => {
-  const domain = window.location.origin
-
   const tokenStorage = localStorage.getItem('token')
   const ivStorage = localStorage.getItem('iv')
   const encryptedToken = decryptData(ivStorage || '', tokenStorage || '')
@@ -37,13 +34,7 @@ export const apiService = async (
   }
 
   try {
-    let url = ''
-
-    if (env === 'staging') {
-      url = `${domain}/be/${endpoint}`
-    } else if (env === 'development') {
-      url = `${defaultURL}/${endpoint}`
-    }
+    const url = `${defaultURL}/${endpoint}`
 
     const response = await axios({
       url: url,
@@ -69,13 +60,7 @@ export const apiService = async (
           break
         case 401:
           try {
-            let urlRefreshToken = ''
-
-            if (env === 'staging') {
-              urlRefreshToken = `${domain}/be/${versioning1}/auth/refresh-token/`
-            } else if (env === 'development') {
-              urlRefreshToken = `${defaultURL}/${versioning1}/auth/refresh-token/`
-            }
+            const urlRefreshToken = `${defaultURL}/${versioning1}/auth/refresh-token/`
 
             const refreshTokenResult = await axios({
               url: urlRefreshToken,
@@ -97,13 +82,7 @@ export const apiService = async (
               Authorization: `Bearer ${resultsToken?.data?.token || ''}`
             }
 
-            let urlRetryResult = ''
-
-            if (env === 'staging') {
-              urlRetryResult = `${domain}/be/${endpoint}`
-            } else if (env === 'development') {
-              urlRetryResult = `${defaultURL}/${endpoint}`
-            }
+            const urlRetryResult = `${defaultURL}/${endpoint}`
 
             const retryResult = await axios({
               url: urlRetryResult,
