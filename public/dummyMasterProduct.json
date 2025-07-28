@@ -8,8 +8,7 @@
             "stock": 12,
             "selling_price": 10000,
             "purchase_price": 5000,
-            "min_stock": 20,
-            "supplier": "PT Plastik Jaya"
+            "min_stock": 20
         },
         {
             "id": 2,
@@ -19,8 +18,7 @@
             "stock": 50,
             "selling_price": 10000,
             "purchase_price": 5000,
-            "min_stock": 20,
-            "supplier": "PT Plastik Jaya"
+            "min_stock": 20
         },
         {
             "id": 3,
@@ -30,8 +28,7 @@
             "stock": 100,
             "selling_price": 10000,
             "purchase_price": 5000,
-            "min_stock": 20,
-            "supplier": "PT Plastik Jaya"
+            "min_stock": 20
         }
     ],
     "meta": {

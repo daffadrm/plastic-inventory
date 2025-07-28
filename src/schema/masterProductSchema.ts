@@ -8,8 +8,7 @@ export const productSchema = z.object({
   stock: z.number(),
   selling_price: z.number(),
   purchase_price: z.number(),
-  min_stock: z.number(),
-  supplier: z.string()
+  min_stock: z.number()
 })
 
 export type ProductSchema = z.infer<typeof productSchema>

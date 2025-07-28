@@ -248,10 +248,6 @@ export const MasterProductOverview = () => {
         cell: ({ row }) => (
           <Typography className='text-xs text-right'>{`${row.original.min_stock?.toLocaleString() || '-'}`}</Typography>
         )
-      }),
-      columnHelper.accessor('supplier', {
-        header: 'Supplier',
-        cell: ({ row }) => <Typography className='text-xs'>{`${row.original.supplier || '-'}`}</Typography>
       })
     ],
     []

@@ -48,8 +48,7 @@ export const defaultValues: ProductSchema = {
   stock: 0,
   selling_price: 0,
   purchase_price: 0,
-  min_stock: 0,
-  supplier: ''
+  min_stock: 0
 }
 
 const AddEditProduct = ({ open, isEditMode, productDetailData, onCancel }: AddEditProductType) => {
@@ -96,7 +95,7 @@ const AddEditProduct = ({ open, isEditMode, productDetailData, onCancel }: AddEd
   }, [productDetailData, reset, open])
 
   return (
-    <Dialog open={open} maxWidth='sm' fullWidth scroll='body'>
+    <Dialog open={open} maxWidth='sm' fullWidth>
       <DialogTitle
         sx={{
           m: 0,
@@ -136,7 +135,7 @@ const AddEditProduct = ({ open, isEditMode, productDetailData, onCancel }: AddEd
               />
             </Grid>
 
-            <Grid item xs={12} sm={12}>
+            <Grid item xs={12} sm={4}>
               <Controller
                 name={'category'}
                 control={control}
@@ -166,27 +165,7 @@ const AddEditProduct = ({ open, isEditMode, productDetailData, onCancel }: AddEd
                 )}
               />
             </Grid>
-            <Grid item xs={12} sm={12}>
-              <Controller
-                name='satuan'
-                control={control}
-                render={({ field }) => (
-                  <CustomTextField
-                    {...field}
-                    fullWidth
-                    label={
-                      <>
-                        Satuan <span className='text-red-500'>*</span>
-                      </>
-                    }
-                    placeholder={'Kantong plastik berbagai macam ukuran'}
-                    error={!!errors.satuan}
-                    helperText={errors.satuan?.message}
-                  />
-                )}
-              />
-            </Grid>
-            <Grid item xs={12} sm={12}>
+            <Grid item xs={12} sm={4}>
               <Controller
                 name='stock'
                 control={control}
@@ -206,7 +185,27 @@ const AddEditProduct = ({ open, isEditMode, productDetailData, onCancel }: AddEd
                 )}
               />
             </Grid>
-            <Grid item xs={12} sm={12}>
+            <Grid item xs={12} sm={4}>
+              <Controller
+                name='satuan'
+                control={control}
+                render={({ field }) => (
+                  <CustomTextField
+                    {...field}
+                    fullWidth
+                    label={
+                      <>
+                        Satuan <span className='text-red-500'>*</span>
+                      </>
+                    }
+                    placeholder={'Kantong plastik berbagai macam ukuran'}
+                    error={!!errors.satuan}
+                    helperText={errors.satuan?.message}
+                  />
+                )}
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
               <Controller
                 name='selling_price'
                 control={control}
@@ -226,7 +225,7 @@ const AddEditProduct = ({ open, isEditMode, productDetailData, onCancel }: AddEd
                 )}
               />
             </Grid>
-            <Grid item xs={12} sm={12}>
+            <Grid item xs={12} sm={4}>
               <Controller
                 name='purchase_price'
                 control={control}
@@ -246,7 +245,7 @@ const AddEditProduct = ({ open, isEditMode, productDetailData, onCancel }: AddEd
                 )}
               />
             </Grid>
-            <Grid item xs={12} sm={12}>
+            <Grid item xs={12} sm={4}>
               <Controller
                 name='min_stock'
                 control={control}
@@ -262,26 +261,6 @@ const AddEditProduct = ({ open, isEditMode, productDetailData, onCancel }: AddEd
                     placeholder={'100'}
                     error={!!errors.min_stock}
                     helperText={errors.min_stock?.message}
-                  />
-                )}
-              />
-            </Grid>
-            <Grid item xs={12} sm={12}>
-              <Controller
-                name='supplier'
-                control={control}
-                render={({ field }) => (
-                  <CustomTextField
-                    {...field}
-                    fullWidth
-                    label={
-                      <>
-                        Supplier <span className='text-red-500'>*</span>
-                      </>
-                    }
-                    placeholder={'PT Plastik Jaya'}
-                    error={!!errors.supplier}
-                    helperText={errors.supplier?.message}
                   />
                 )}
               />
