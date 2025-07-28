@@ -1,0 +1,260 @@
+{
+    "data": {
+        "statistic": {
+            "total_product": 10000,
+            "items_in": 20000,
+            "items_out": 500000,
+            "total_transaction": 1200000
+        },
+        "total_items_transaction": {
+            "categories": [
+                "Senin",
+                "Selasa",
+                "Rabu",
+                "Kamis",
+                "Jumat",
+                "Sabtu",
+                "Minggu"
+            ],
+            "value": [
+                {
+                    "data": [
+                        10,
+                        300,
+                        12,
+                        40,
+                        10,
+                        60,
+                        90
+                    ],
+                    "name": "Penjualan"
+                },
+                {
+                    "data": [
+                        0,
+                        10,
+                        20,
+                        40,
+                        200,
+                        120,
+                        32
+                    ],
+                    "name": "Pembelian"
+                }
+            ]
+        },
+        "total_value_trasaction": {
+            "categories": [
+                "09.00",
+                "10.00",
+                "11.00",
+                "12.00",
+                "13.00",
+                "14.00",
+                "15.00",
+                "16.00",
+                "17.00",
+                "18.00",
+                "19.00",
+                "20.00",
+                "21.00",
+                "22.00"
+            ],
+            "value": [
+                {
+                    "data": [
+                        0,
+                        0,
+                        0,
+                        0,
+                        31,
+                        3,
+                        2,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        5,
+                        20
+                    ],
+                    "name": "Total Jumlah Barang"
+                },
+                {
+                    "data": [
+                        0,
+                        0,
+                        0,
+                        0,
+                        187200000,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        10000,
+                        45000
+                    ],
+                    "name": "Total Harga Barang"
+                }
+            ]
+        },
+        "product_stock_low": [
+            {
+                "name": "Plastik PE 1kg",
+                "value": 2
+            },
+            {
+                "name": "Plastik HD Putih Ukuran Sedang",
+                "value": 3
+            },
+            {
+                "name": "Plastik Ziplock 8x12cm",
+                "value": 4
+            },
+            {
+                "name": "Plastik Sampah Hitam Sedang",
+                "value": 4
+            },
+            {
+                "name": "Plastik Kresek Ukuran Kecil",
+                "value": 5
+            },
+            {
+                "name": "Plastik Vacuum 15x20cm",
+                "value": 6
+            },
+            {
+                "name": "Plastik PP 10x15cm",
+                "value": 6
+            },
+            {
+                "name": "Plastik OPP 12x17cm",
+                "value": 7
+            },
+            {
+                "name": "Plastik Roll Ukuran Kecil",
+                "value": 8
+            },
+            {
+                "name": "Plastik Mika 500ml",
+                "value": 9
+            }
+        ],
+        "product_bestseller": [
+            {
+                "name": "Plastik Kresek Ukuran Sedang",
+                "value": 120
+            },
+            {
+                "name": "Plastik OPP 10x15cm",
+                "value": 95
+            },
+            {
+                "name": "Plastik PE 0.5kg",
+                "value": 80
+            },
+            {
+                "name": "Plastik Vacuum 20x30cm",
+                "value": 60
+            },
+            {
+                "name": "Plastik PP 12x20cm",
+                "value": 45
+            },
+            {
+                "name": "Plastik Mika Bulat 250ml",
+                "value": 40
+            },
+            {
+                "name": "Plastik Ziplock 8x12cm",
+                "value": 38
+            },
+            {
+                "name": "Plastik HD Transparan",
+                "value": 35
+            },
+            {
+                "name": "Plastik Roll Ukuran Besar",
+                "value": 30
+            },
+            {
+                "name": "Plastik Sampah Hitam Jumbo",
+                "value": 28
+            }
+        ],
+        "history_transaction": [
+            {
+                "date": "123",
+                "product_name": "Plastik",
+                "product_description": "20x20",
+                "quantity": 123,
+                "unit": "pcs",
+                "price": "20000"
+            },
+            {
+                "date": "123",
+                "product_name": "Plastik",
+                "product_description": "20x20",
+                "quantity": 123,
+                "unit": "pcs",
+                "price": "20000"
+            },
+            {
+                "date": "123",
+                "product_name": "Plastik",
+                "product_description": "20x20",
+                "quantity": 123,
+                "unit": "pcs",
+                "price": "20000"
+            },
+            {
+                "date": "123",
+                "product_name": "Plastik",
+                "product_description": "20x20",
+                "quantity": 123,
+                "unit": "pcs",
+                "price": "20000"
+            },
+            {
+                "date": "123",
+                "product_name": "Plastik",
+                "product_description": "20x20",
+                "quantity": 123,
+                "unit": "pcs",
+                "price": "20000"
+            },
+            {
+                "date": "123",
+                "product_name": "Plastik",
+                "product_description": "20x20",
+                "quantity": 123,
+                "unit": "pcs",
+                "price": "20000"
+            },
+            {
+                "date": "123",
+                "product_name": "Plastik",
+                "product_description": "20x20",
+                "quantity": 123,
+                "unit": "pcs",
+                "price": "20000"
+            },
+            {
+                "date": "123",
+                "product_name": "Plastik",
+                "product_description": "20x20",
+                "quantity": 123,
+                "unit": "pcs",
+                "price": "20000"
+            }
+        ]
+    },
+    "meta": {
+        "code": 200,
+        "message": "Successfully",
+        "status": "Successfully"
+    }
+}
