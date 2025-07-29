@@ -78,7 +78,7 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
         <MenuItem href='/items-in' icon={<i className='tabler-arrow-narrow-down' />}>
           Barang Masuk
         </MenuItem>
-        <MenuItem href='/history-transaction' icon={<i className='tabler-arrow-narrow-up' />}>
+        <MenuItem href='/history-transaction' icon={<i className='tabler-history' />}>
           Riwayat Transaksi
         </MenuItem>
         <SubMenu label={'Master'} icon={<i className='tabler-settings' />}>
