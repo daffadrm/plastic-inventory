@@ -13,7 +13,7 @@ const versioning1 = process.env.NEXT_PUBLIC_API_V1
 
 export const apiService = async (
   endpoint: string,
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET',
+  method: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE' = 'GET',
   data?: any,
   headers?: any
 ) => {
@@ -33,6 +33,8 @@ export const apiService = async (
     }
   }
 
+  console.log(resultsToken, 'result token auth ')
+
   try {
     const url = `${defaultURL}/${endpoint}`
 
@@ -50,6 +52,8 @@ export const apiService = async (
     if (error.response) {
       const { status } = error.response
 
+      console.log(error.response, 'error response')
+
       switch (status) {
         case 404:
           customError = new Error('Resource not found (404).')
@@ -60,26 +64,28 @@ export const apiService = async (
           break
         case 401:
           try {
-            const urlRefreshToken = `${defaultURL}/${versioning1}/auth/refresh-token/`
+            const urlRefreshToken = `${defaultURL}/${versioning1}/auth/refresh`
 
             const refreshTokenResult = await axios({
               url: urlRefreshToken,
               method: 'POST',
               headers: {
                 ...headers,
-                Authorization: `Bearer ${resultsToken?.data?.token || ''}`
+                Authorization: `Bearer ${resultsToken?.token || ''}`
               },
               data: {
-                refresh_token: resultsToken?.data?.refresh_token
+                refresh_token: resultsToken?.refresh_token
               }
             })
 
-            resultsToken.data.token = refreshTokenResult?.data?.data?.token
-            resultsToken.data.refresh_token = refreshTokenResult?.data?.data?.refreshToken
+            console.log(refreshTokenResult, 'refreshToken')
+
+            resultsToken.token = refreshTokenResult?.data?.token
+            resultsToken.refresh_token = refreshTokenResult?.data?.refresh_token
 
             headers = {
               ...headers,
-              Authorization: `Bearer ${resultsToken?.data?.token || ''}`
+              Authorization: `Bearer ${resultsToken?.token || ''}`
             }
 
             const urlRetryResult = `${defaultURL}/${endpoint}`
@@ -121,10 +127,10 @@ export const apiService = async (
           throw customError
           break
         default:
-          customError = new Error(error?.response?.data?.meta?.message)
+          customError = new Error(error?.response?.data?.error)
           Object.assign(customError, error)
           Object.defineProperty(customError, 'message', {
-            value: error?.response?.data?.meta?.message || 'Unknown error occurred.'
+            value: error?.response?.data?.error || 'Unknown error occurred.'
           })
 
           throw customError
@@ -147,6 +153,9 @@ export const getHeader = (headerParam?: { [key: string]: string }) => {
   const encryptedToken = decryptData(ivStorage || '', tokenStorage || '')
   let resultsToken = null
 
+  console.log(resultsToken, 'resultToken')
+  console.log(encryptedToken, 'encryptedToken')
+
   if (encryptedToken) {
     try {
       resultsToken = encryptedToken ? JSON.parse(encryptedToken) : null
@@ -159,7 +168,7 @@ export const getHeader = (headerParam?: { [key: string]: string }) => {
   }
 
   let headers = {
-    Authorization: `Bearer ${resultsToken?.data?.token || ''}`
+    Authorization: `Bearer ${resultsToken?.token || ''}`
   }
 
   if (headerParam) {
