@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 'use client'
 
 import React, { type ChangeEvent, useState, useMemo, useEffect, useCallback, useRef } from 'react'
@@ -27,6 +26,8 @@ import {
 import type { ColumnDef, FilterFn } from '@tanstack/react-table'
 import type { RankingInfo } from '@tanstack/match-sorter-utils'
 
+import moment from 'moment'
+
 import TablePaginationComponent from '@components/TablePaginationComponent'
 
 // Style Imports
@@ -34,7 +35,6 @@ import tableStyles from '@core/styles/table.module.css'
 import styles from './styles.module.css'
 import CustomTextField from '@/@core/components/mui/TextField'
 
-import CustomSnackbar from '@/components/snackbar/CustomSnackbar'
 import ModalConfirmationComponent from '@/components/modal/confirmation/ModalConfirmation'
 import useDebounce from '@/@core/hooks/usedebounce'
 import AddEditUser from '@/components/modal/master/user/AddEditUser'
@@ -69,58 +69,38 @@ const columnHelper = createColumnHelper<MasterUserTableType>()
 export const UserOverview = () => {
   const isFirstRender = useRef(true)
   const [rowSelection, setRowSelection] = useState({})
-  const [assetGroupState, setAssetGroupState] = useState<MasterUserTableType[]>([])
+  const [userState, setUserState] = useState<MasterUserTableType[]>([])
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
-  const [selectedAssetGroup, setSelectedAssetGroup] = useState<any>(null)
+  const [selectedUser, setSelectedUser] = useState<any>(null)
   const [isOpenConfirmationModalState, setIsOpenConfirmationModalState] = useState<boolean>(false)
   const [selectedId, setSelectedId] = useState<any>()
   const [searchValue, setSearchValue] = useState<string>('')
 
-  const [openSnackbar, setOpenSnackbar] = useState<boolean>(false)
-  const [snackbarMessage, setSnackbarMessage] = useState<string>('')
-  const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success')
-
-  const { dataList, isLoading, fetchMasterUser, setQueryParams, order_direction, limit, page, order_column, search } =
-    useMasterUserStore()
+  const {
+    dataList,
+    isLoading,
+    fetchMasterUser,
+    setQueryParams,
+    deleteMasterUser,
+    order_direction,
+    limit,
+    page,
+    order_column,
+    search,
+    total_data
+  } = useMasterUserStore()
 
   console.log(dataList, 'dataList')
 
-  // const [paramState, setParamState] = useState<{
-  //   limit: number
-  //   page: number
-  //   order_column: string
-  //   order_direction: 'asc' | 'desc'
-  //   search: string
-  // }>({
-  //   limit: 30,
-  //   page: 1,
-  //   order_column: 'username',
-  //   order_direction: 'asc',
-  //   search: ''
-  // })
-
-  const handleCloseSnackbar = () => {
-    setOpenSnackbar(false)
-  }
-
-  const handleSnackbar = useCallback(
-    (severity: 'success' | 'error', message: string) => {
-      setSnackbarSeverity(severity)
-      setSnackbarMessage(message)
-      setOpenSnackbar(true)
-    },
-    [setOpenSnackbar, setSnackbarMessage, setSnackbarSeverity]
-  )
-
-  const handleAddAssetGroup = () => {
-    setSelectedAssetGroup(null) // Reset data pengguna
+  const handleAddUser = () => {
+    setSelectedUser(null) // Reset data pengguna
     setIsEditMode(false)
     setIsDialogOpen(true)
   }
 
-  const handleEditAssetGroup = (assetGroup: any) => {
-    setSelectedAssetGroup(assetGroup)
+  const handleEditUser = (assetGroup: any) => {
+    setSelectedUser(assetGroup)
     setIsEditMode(true)
     setIsDialogOpen(true)
   }
@@ -144,16 +124,16 @@ export const UserOverview = () => {
     setSelectedId(userParam)
   }, [])
 
-  const handleDeleteAssetGroup = useCallback(() => {
-    try {
-      handleSnackbar('success', 'Success Delete Asset Group')
+  const handleDeleteMasterUser = useCallback(() => {
+    console.log(selectedId, 'seelcee')
 
+    try {
+      deleteMasterUser(selectedId?.id)
       setIsOpenConfirmationModalState(false)
     } catch (err: any) {
-      handleSnackbar('error', 'Error')
       console.error(err)
     }
-  }, [])
+  }, [deleteMasterUser, selectedId])
 
   const debouncedSearchTerm = useDebounce(searchValue, 500)
 
@@ -161,17 +141,16 @@ export const UserOverview = () => {
     setSearchValue(event?.target?.value)
   }, [])
 
-  // useEffect(() => {
-  //   fetchDataAssetGroup()
-  // }, [paramState])
-
   useEffect(() => {
     fetchMasterUser({ limit, page, order_column, order_direction })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [limit, page, order_column, order_direction, search])
 
   useEffect(() => {
     if (dataList) {
-      setAssetGroupState(dataList)
+      setUserState(dataList || [])
+    } else {
+      setUserState([])
     }
   }, [dataList])
 
@@ -191,6 +170,7 @@ export const UserOverview = () => {
     setQueryParams({ search: debouncedSearchTerm, page: 1 })
 
     table.setPageIndex(0)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearchTerm])
 
   const columns = useMemo<ColumnDef<MasterUserTableType, any>[]>(
@@ -203,7 +183,7 @@ export const UserOverview = () => {
             <Button
               type='button'
               className='w-fit min-w-[16px] px-2 items-center'
-              onClick={() => handleEditAssetGroup(row.original)}
+              onClick={() => handleEditUser(row.original)}
             >
               <i className={'tabler-edit text-[16px]'} />
             </Button>
@@ -222,9 +202,9 @@ export const UserOverview = () => {
         header: 'Username',
         cell: ({ row }) => <Typography className='text-xs'>{`${row.original.username || '-'}`}</Typography>
       }),
-      columnHelper.accessor('full_name', {
+      columnHelper.accessor('fullname', {
         header: 'Nama',
-        cell: ({ row }) => <Typography className='text-xs'>{`${row.original.full_name || '-'}`}</Typography>
+        cell: ({ row }) => <Typography className='text-xs'>{`${row.original.fullname || '-'}`}</Typography>
       }),
       columnHelper.accessor('email', {
         header: 'Email',
@@ -238,20 +218,24 @@ export const UserOverview = () => {
         header: 'Role',
         cell: ({ row }) => <Typography className='text-xs'>{`${row.original.role || '-'}`}</Typography>
       }),
-      columnHelper.accessor('updatedAt', {
+      columnHelper.accessor('updated_at', {
         header: 'Diperbarui pada',
-        cell: ({ row }) => <Typography className='text-xs'>{`${row.original.updatedAt || '-'}`}</Typography>
+        cell: ({ row }) => (
+          <Typography className='text-xs'>{`${row.original.updated_at ? moment(row.original.updated_at).format('DD/MM/YYYY, HH:mm') : '-'}`}</Typography>
+        )
       }),
-      columnHelper.accessor('createdAt', {
+      columnHelper.accessor('created_at', {
         header: 'Dibuat pada',
-        cell: ({ row }) => <Typography className='text-xs'>{`${row.original.createdAt || '-'}`}</Typography>
+        cell: ({ row }) => (
+          <Typography className='text-xs'>{`${row?.original?.created_at ? moment(row.original.created_at).format('DD/MM/YYYY, HH:mm') : '-'}`}</Typography>
+        )
       })
     ],
-    []
+    [handleConfirmationModal]
   )
 
   const table = useReactTable({
-    data: assetGroupState as MasterUserTableType[],
+    data: userState as MasterUserTableType[],
     columns,
     filterFns: {
       fuzzy: fuzzyFilter
@@ -312,7 +296,7 @@ export const UserOverview = () => {
               <Button
                 startIcon={<i className={'tabler-plus text-[18px]'} />}
                 variant='contained'
-                onClick={handleAddAssetGroup}
+                onClick={handleAddUser}
                 className='ml-auto text-nowrap items-center gap-0 rounded-md xl:text-sm lg:text-xs md:text-[14px] sm:text-[11px] mb-2 py-1'
               >
                 Pengguna
@@ -402,7 +386,14 @@ export const UserOverview = () => {
               </table>
             </div>
             <TablePagination
-              component={() => <TablePaginationComponent table={table as any} />}
+              component={() => (
+                <TablePaginationComponent
+                  table={table as any}
+                  isManualPagination
+                  totalData={total_data}
+                  setParamState={setQueryParams}
+                />
+              )}
               count={table.getFilteredRowModel().rows.length}
               rowsPerPage={table.getState().pagination.pageSize}
               page={table.getState().pagination.pageIndex}
@@ -416,14 +407,8 @@ export const UserOverview = () => {
       <AddEditUser
         open={isDialogOpen}
         isEditMode={isEditMode}
-        userDetailData={selectedAssetGroup}
+        userDetailData={selectedUser}
         onCancel={handleCloseDialog}
-      />
-      <CustomSnackbar
-        openSnackbar={openSnackbar}
-        snackbarSeverity={snackbarSeverity}
-        snackbarMessage={snackbarMessage}
-        handleCloseSnackbar={handleCloseSnackbar}
       />
       <ModalConfirmationComponent
         isOpen={isOpenConfirmationModalState}
@@ -431,14 +416,14 @@ export const UserOverview = () => {
         title='Hapus Pengguna'
         warning={
           <>
-            Aksi ini akan menghapus <strong>{selectedId?.full_name}</strong>. Apakah anda yakin?
+            Aksi ini akan menghapus <strong>{selectedId?.fullname}</strong>. Apakah anda yakin?
           </>
         }
         icon='tabler-trash'
         actionText='Hapus'
         handleClose={() => setIsOpenConfirmationModalState(false)}
         data={selectedId}
-        handleRequest={handleDeleteAssetGroup}
+        handleRequest={handleDeleteMasterUser}
       />
     </Card>
   )

@@ -5,7 +5,16 @@ import { useEffect, useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid } from '@mui/material'
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Grid,
+  IconButton,
+  InputAdornment
+} from '@mui/material'
 import { LoadingButton } from '@mui/lab'
 
 import CustomTextField from '@core/components/mui/TextField'
@@ -25,37 +34,34 @@ interface AddEditUserType {
 const optionRole = [
   {
     label: 'Admin',
-    value: 'Admin'
+    value: 'admin'
   },
   {
-    label: 'Operator',
-    value: 'Operator'
-  },
-  {
-    label: 'User',
-    value: 'User'
+    label: 'Staff',
+    value: 'staff'
   }
 ]
 
 export const defaultValues: UserSchema = {
-  user_id: 0,
   username: '',
-  full_name: '',
+  fullname: '',
   email: '',
-  phone_number: '',
   role: {
     label: '',
     value: ''
   },
-  status: 'Active',
-  profile_picture: null,
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString()
+  password: '',
+  confirm_password: ''
 }
 
 const AddEditUser = ({ open, isEditMode, userDetailData, onCancel }: AddEditUserType) => {
   const { updateMasterUser } = useMasterUserStore()
   const [isOpenConfirmationModalState, setIsOpenConfirmationModalState] = useState<boolean>(false)
+
+  const [isPasswordShown, setIsPasswordShown] = useState(false)
+  const [isPasswordConfirmationShown, setIsPasswordConfirmationShown] = useState(false)
+  const handleClickShowPassword = () => setIsPasswordShown(show => !show)
+  const handleClickShowPasswordConfirmation = () => setIsPasswordConfirmationShown(show => !show)
 
   const handleConfirmationModal = () => {
     setIsOpenConfirmationModalState(!isOpenConfirmationModalState)
@@ -73,8 +79,12 @@ const AddEditUser = ({ open, isEditMode, userDetailData, onCancel }: AddEditUser
   })
 
   const handleSubmitForm = async (dataParam: any) => {
-    console.log(dataParam, 'dataParam')
-    updateMasterUser(dataParam?.user.id, dataParam)
+    const payload = {
+      ...dataParam,
+      role: dataParam?.role.value
+    }
+
+    updateMasterUser(userDetailData?.id, payload)
     reset(defaultValues)
     handleConfirmationModal()
     onCancel()
@@ -92,6 +102,9 @@ const AddEditUser = ({ open, isEditMode, userDetailData, onCancel }: AddEditUser
     } else {
       reset(defaultValues)
     }
+
+    setIsPasswordShown(false)
+    setIsPasswordConfirmationShown(false)
   }, [userDetailData, reset, open])
 
   return (
@@ -137,7 +150,7 @@ const AddEditUser = ({ open, isEditMode, userDetailData, onCancel }: AddEditUser
 
             <Grid item xs={12} sm={6}>
               <Controller
-                name='full_name'
+                name='fullname'
                 control={control}
                 render={({ field }) => (
                   <CustomTextField
@@ -149,8 +162,8 @@ const AddEditUser = ({ open, isEditMode, userDetailData, onCancel }: AddEditUser
                       </>
                     }
                     placeholder={'daffa'}
-                    error={!!errors.full_name}
-                    helperText={errors.full_name?.message}
+                    error={!!errors.fullname}
+                    helperText={errors.fullname?.message}
                   />
                 )}
               />
@@ -175,7 +188,7 @@ const AddEditUser = ({ open, isEditMode, userDetailData, onCancel }: AddEditUser
                 )}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            {/* <Grid item xs={12} sm={6}>
               <Controller
                 name='phone_number'
                 control={control}
@@ -194,7 +207,7 @@ const AddEditUser = ({ open, isEditMode, userDetailData, onCancel }: AddEditUser
                   />
                 )}
               />
-            </Grid>
+            </Grid> */}
             <Grid item xs={12} sm={6}>
               <Controller
                 name={'role'}
@@ -221,6 +234,60 @@ const AddEditUser = ({ open, isEditMode, userDetailData, onCancel }: AddEditUser
                 )}
               />
             </Grid>
+
+            <Grid item xs={6} sm={6}>
+              <Controller
+                name='password'
+                control={control}
+                render={({ field }) => (
+                  <CustomTextField
+                    {...field}
+                    fullWidth
+                    label={'Password'}
+                    placeholder={'*********'}
+                    type={isPasswordShown ? 'text' : 'password'}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position='end'>
+                          <IconButton edge='end' onClick={handleClickShowPassword}>
+                            <i className={isPasswordShown ? 'tabler-eye-off' : 'tabler-eye'} />
+                          </IconButton>
+                        </InputAdornment>
+                      )
+                    }}
+                    error={!!errors.password}
+                    helperText={errors.password?.message}
+                  />
+                )}
+              />
+            </Grid>
+
+            <Grid item xs={6} sm={6}>
+              <Controller
+                name='confirm_password'
+                control={control}
+                render={({ field }) => (
+                  <CustomTextField
+                    {...field}
+                    fullWidth
+                    label={'Konfirmasi Password'}
+                    placeholder={'**********'}
+                    type={isPasswordConfirmationShown ? 'text' : 'password'}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position='end'>
+                          <IconButton edge='end' onClick={handleClickShowPasswordConfirmation}>
+                            <i className={isPasswordConfirmationShown ? 'tabler-eye-off' : 'tabler-eye'} />
+                          </IconButton>
+                        </InputAdornment>
+                      )
+                    }}
+                    error={!!errors.confirm_password}
+                    helperText={errors.confirm_password?.message}
+                  />
+                )}
+              />
+            </Grid>
           </Grid>
         </DialogContent>
         <DialogActions className='justify-between pbs-0'>
@@ -235,7 +302,7 @@ const AddEditUser = ({ open, isEditMode, userDetailData, onCancel }: AddEditUser
       <ModalConfirmationComponent
         isOpen={isOpenConfirmationModalState}
         toggle={handleConfirmationModal}
-        title={'Perbarui Data Pengguna'}
+        title={`${isEditMode ? 'Perbarui' : 'Tambah'} Data Pengguna`}
         warning={'Tindakan ini akan menyimpan perubahan. Apakah Anda yakin ingin melanjutkan?'}
         icon={'tabler-send'}
         actionText={'Simpan'}

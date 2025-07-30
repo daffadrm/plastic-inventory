@@ -1,14 +1,14 @@
 export type MasterUserTableType = Partial<{
   user_id: number
   username: string
-  full_name: string
+  fullname: string
   email: string
   phone_number: string
   role: 'Admin' | 'Operator' | 'User' // enum-like
   status: 'Active' | 'Inactive' | 'Suspended'
   profile_picture: string | null
-  createdAt: string // ISO datetime string
-  updatedAt: string // ISO datetime string
+  created_at: string // ISO datetime string
+  updated_at: string // ISO datetime string
 }>
 
 export type QueryParams = {
@@ -30,8 +30,10 @@ export type MasterUserStore = {
   search: string
   order_column: string
   order_direction: string
+  total_data: number
 
   setQueryParams: (params: Partial<QueryParams>) => void
   fetchMasterUser: (id: any) => Promise<void>
   updateMasterUser: (data: any, id: string) => Promise<boolean>
+  deleteMasterUser: (id: string) => Promise<boolean>
 }
