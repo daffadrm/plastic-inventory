@@ -80,8 +80,8 @@ export const apiService = async (
 
             console.log(refreshTokenResult, 'refreshToken')
 
-            resultsToken.token = refreshTokenResult?.data?.token
-            resultsToken.refresh_token = refreshTokenResult?.data?.refresh_token
+            resultsToken.token = refreshTokenResult?.data?.data?.token
+            resultsToken.refresh_token = refreshTokenResult?.data?.data?.refresh_token
 
             headers = {
               ...headers,
