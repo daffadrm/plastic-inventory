@@ -3,7 +3,7 @@ import { create } from 'zustand'
 import { useSnackbarStore } from './snackbarStore'
 
 import type { MasterUnitStore, QueryParams } from '@/types/apps/masterUnitTypes'
-import { getMasterUnitList, updateMasterUnit } from '@/app/server/master/unit'
+import { createMasterUnits, deleteMasterUnits, getMasterUnitList, updateMasterUnits } from '@/app/server/master/unit'
 
 export const useMasterUnitsStore = create<MasterUnitStore>((set, get) => ({
   isLoading: false,
@@ -16,6 +16,7 @@ export const useMasterUnitsStore = create<MasterUnitStore>((set, get) => ({
   search: '',
   order_column: 'username',
   order_direction: 'asc',
+  total_data: 0,
 
   setQueryParams: (params: Partial<QueryParams>) =>
     set(state => ({
@@ -47,7 +48,7 @@ export const useMasterUnitsStore = create<MasterUnitStore>((set, get) => ({
     try {
       const response = await getMasterUnitList(finalParams)
 
-      set({ dataList: response?.data || null })
+      set({ dataList: response?.data || null, total_data: response?.meta?.total || 0 })
     } catch (err: any) {
       set({ isError: true })
       set({ dataList: null })
@@ -58,21 +59,49 @@ export const useMasterUnitsStore = create<MasterUnitStore>((set, get) => ({
     }
   },
 
-  updateMasterUnit: async (data: any, id: string) => {
+  updateMasterUnit: async (id: string, data: any) => {
     const { fetchMasterUnit } = get()
 
     set({ isLoadingUpdate: true })
 
     try {
-      const response = await updateMasterUnit(data, id)
+      let response
 
-      useSnackbarStore.getState().showSnackbar(response?.meta?.message || 'update berhasil', 'success')
-      await fetchMasterUnit({ land_id: id })
+      if (id) {
+        response = await updateMasterUnits(id, data)
+      } else {
+        response = await createMasterUnits(data)
+      }
+
+      useSnackbarStore.getState().showSnackbar(response?.meta?.message || 'perbarui berhasil', 'success')
+      await fetchMasterUnit()
 
       return true
     } catch (err: any) {
       set({ isError: true })
-      useSnackbarStore.getState().showSnackbar(err?.message || 'update gagal', 'error')
+      useSnackbarStore.getState().showSnackbar(err?.message || 'perbarui gagal', 'error')
+
+      return false
+    } finally {
+      set({ isLoadingUpdate: false })
+    }
+  },
+
+  deleteMasterUnit: async (id: string) => {
+    const { fetchMasterUnit } = get()
+
+    set({ isLoadingUpdate: true })
+
+    try {
+      const response = await deleteMasterUnits(id)
+
+      useSnackbarStore.getState().showSnackbar(response?.meta?.message || 'hapus berhasil', 'success')
+      await fetchMasterUnit()
+
+      return true
+    } catch (err: any) {
+      set({ isError: true })
+      useSnackbarStore.getState().showSnackbar(err?.message || 'hapus gagal', 'error')
 
       return false
     } finally {

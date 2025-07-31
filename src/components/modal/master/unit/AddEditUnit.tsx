@@ -22,10 +22,9 @@ interface AddEditUnitType {
 }
 
 export const defaultValues: UnitSchema = {
-  id: 0,
-  name: '',
-  simbol: '',
-  type: '',
+  unit_name: '',
+  unit_symbol: '',
+  unit_type: '',
   description: ''
 }
 
@@ -49,8 +48,12 @@ const AddEditUnit = ({ open, isEditMode, unitDetailData, onCancel }: AddEditUnit
   })
 
   const handleSubmitForm = async (dataParam: any) => {
-    console.log(dataParam, 'dataParam')
-    updateMasterUnit(dataParam?.id, dataParam)
+    const payload = {
+      ...dataParam,
+      type: dataParam?.unit_type
+    }
+
+    updateMasterUnit(unitDetailData?.id, payload)
     reset(defaultValues)
     handleConfirmationModal()
     onCancel()
@@ -88,7 +91,7 @@ const AddEditUnit = ({ open, isEditMode, unitDetailData, onCancel }: AddEditUnit
           <Grid container spacing={6}>
             <Grid item xs={12} sm={12}>
               <Controller
-                name='name'
+                name='unit_name'
                 control={control}
                 render={({ field }) => (
                   <CustomTextField
@@ -100,8 +103,8 @@ const AddEditUnit = ({ open, isEditMode, unitDetailData, onCancel }: AddEditUnit
                       </>
                     }
                     placeholder={'Kresek'}
-                    error={!!errors.name}
-                    helperText={errors.name?.message}
+                    error={!!errors.unit_name}
+                    helperText={errors.unit_name?.message}
                   />
                 )}
               />
@@ -109,7 +112,7 @@ const AddEditUnit = ({ open, isEditMode, unitDetailData, onCancel }: AddEditUnit
 
             <Grid item xs={12} sm={12}>
               <Controller
-                name='simbol'
+                name='unit_symbol'
                 control={control}
                 render={({ field }) => (
                   <CustomTextField
@@ -121,15 +124,15 @@ const AddEditUnit = ({ open, isEditMode, unitDetailData, onCancel }: AddEditUnit
                       </>
                     }
                     placeholder={'Pcs'}
-                    error={!!errors.simbol}
-                    helperText={errors.simbol?.message}
+                    error={!!errors.unit_symbol}
+                    helperText={errors.unit_symbol?.message}
                   />
                 )}
               />
             </Grid>
             <Grid item xs={12} sm={12}>
               <Controller
-                name='type'
+                name='unit_type'
                 control={control}
                 render={({ field }) => (
                   <CustomTextField
@@ -141,8 +144,8 @@ const AddEditUnit = ({ open, isEditMode, unitDetailData, onCancel }: AddEditUnit
                       </>
                     }
                     placeholder={'Unit'}
-                    error={!!errors.type}
-                    helperText={errors.type?.message}
+                    error={!!errors.unit_type}
+                    helperText={errors.unit_type?.message}
                   />
                 )}
               />
@@ -181,7 +184,7 @@ const AddEditUnit = ({ open, isEditMode, unitDetailData, onCancel }: AddEditUnit
       <ModalConfirmationComponent
         isOpen={isOpenConfirmationModalState}
         toggle={handleConfirmationModal}
-        title={'Perbarui Data Unit'}
+        title={`${isEditMode ? 'Perbarui' : 'Menambahkan'} Data Unit`}
         warning={'Tindakan ini akan menyimpan perubahan. Apakah Anda yakin ingin melanjutkan?'}
         icon={'tabler-send'}
         actionText={'Simpan'}

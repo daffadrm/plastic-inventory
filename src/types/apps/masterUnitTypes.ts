@@ -1,9 +1,11 @@
 export type MasterUnitTableType = Partial<{
   id: number
-  name: string
-  simbol: string
-  type: string
+  unit_name: string
+  unit_symbol: string
+  unit_type: string
   description: string
+  created_at: string
+  updated_at: string
 }>
 
 export type QueryParams = {
@@ -25,8 +27,10 @@ export type MasterUnitStore = {
   search: string
   order_column: string
   order_direction: string
+  total_data: number
 
   setQueryParams: (params: Partial<QueryParams>) => void
-  fetchMasterUnit: (id: any) => Promise<void>
+  fetchMasterUnit: () => Promise<void>
   updateMasterUnit: (data: any, id: string) => Promise<boolean>
+  deleteMasterUnit: (id: string) => Promise<boolean>
 }
