@@ -3,7 +3,12 @@ import { create } from 'zustand'
 import { useSnackbarStore } from './snackbarStore'
 
 import type { MasterCategoryStore, QueryParams } from '@/types/apps/masterCategoryTypes'
-import { getMasterCategoryList, updateMasterCategory } from '@/app/server/master/category'
+import {
+  createMasterCategory,
+  deleteMasterCategory,
+  getMasterCategoryList,
+  updateMasterCategory
+} from '@/app/server/master/category'
 
 export const useMasterCategoryStore = create<MasterCategoryStore>((set, get) => ({
   isLoading: false,
@@ -12,10 +17,11 @@ export const useMasterCategoryStore = create<MasterCategoryStore>((set, get) => 
   isLoadingUpdate: false,
 
   page: 1,
-  limit: 10,
+  limit: 30,
   search: '',
   order_column: 'username',
   order_direction: 'asc',
+  total_data: 0,
 
   setQueryParams: (params: Partial<QueryParams>) =>
     set(state => ({
@@ -47,7 +53,7 @@ export const useMasterCategoryStore = create<MasterCategoryStore>((set, get) => 
     try {
       const response = await getMasterCategoryList(finalParams)
 
-      set({ dataList: response?.data || null })
+      set({ dataList: response?.data || null, total_data: response?.meta?.total })
     } catch (err: any) {
       set({ isError: true })
       set({ dataList: null })
@@ -58,21 +64,48 @@ export const useMasterCategoryStore = create<MasterCategoryStore>((set, get) => 
     }
   },
 
-  updateMasterCategory: async (data: any, id: string) => {
+  updateMasterCategory: async (id: string, data: string) => {
     const { fetchMasterCategory } = get()
 
     set({ isLoadingUpdate: true })
 
     try {
-      const response = await updateMasterCategory(data, id)
+      let response
+
+      if (id) {
+        response = await updateMasterCategory(id, data)
+      } else {
+        response = await createMasterCategory(data)
+      }
 
       useSnackbarStore.getState().showSnackbar(response?.meta?.message || 'update berhasil', 'success')
-      await fetchMasterCategory({ land_id: id })
+      await fetchMasterCategory()
 
       return true
     } catch (err: any) {
       set({ isError: true })
       useSnackbarStore.getState().showSnackbar(err?.message || 'update gagal', 'error')
+
+      return false
+    } finally {
+      set({ isLoadingUpdate: false })
+    }
+  },
+  deleteMasterCategory: async (id: string) => {
+    const { fetchMasterCategory } = get()
+
+    set({ isLoadingUpdate: true })
+
+    try {
+      const response = await deleteMasterCategory(id)
+
+      useSnackbarStore.getState().showSnackbar(response?.meta?.message || 'hapus berhasil', 'success')
+      await fetchMasterCategory()
+
+      return true
+    } catch (err: any) {
+      set({ isError: true })
+      useSnackbarStore.getState().showSnackbar(err?.message || 'hapus gagal', 'error')
 
       return false
     } finally {

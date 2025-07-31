@@ -25,21 +25,20 @@ interface AddEditCategoryType {
 const optionStatus = [
   {
     label: 'Aktif',
-    value: 'Aktif'
+    value: true
   },
   {
     label: 'Tidak Aktif',
-    value: 'Tidak Aktif'
+    value: false
   }
 ]
 
 export const defaultValues: CategorySchema = {
-  id: 0,
-  name: '',
+  category_name: '',
   description: '',
-  status: {
-    label: '',
-    value: ''
+  is_active: {
+    label: 'Tidak Aktif',
+    value: false
   }
 }
 
@@ -64,7 +63,13 @@ const AddEditCategory = ({ open, isEditMode, categoryDetailData, onCancel }: Add
 
   const handleSubmitForm = async (dataParam: any) => {
     console.log(dataParam, 'dataParam')
-    updateMasterCategory(dataParam?.id, dataParam)
+
+    const payload = {
+      ...dataParam,
+      is_active: dataParam?.is_active.value
+    }
+
+    updateMasterCategory(categoryDetailData?.id, payload)
     reset(defaultValues)
     handleConfirmationModal()
     onCancel()
@@ -74,11 +79,9 @@ const AddEditCategory = ({ open, isEditMode, categoryDetailData, onCancel }: Add
     if (categoryDetailData && open) {
       reset({
         ...categoryDetailData,
-        status: optionStatus.find(
-          status => status.value?.toLowerCase() === categoryDetailData?.status?.toLowerCase()
-        ) ?? {
+        is_active: optionStatus.find(status => status.value === categoryDetailData?.is_active) ?? {
           label: '',
-          value: ''
+          value: false
         }
       })
     } else {
@@ -108,7 +111,7 @@ const AddEditCategory = ({ open, isEditMode, categoryDetailData, onCancel }: Add
           <Grid container spacing={6}>
             <Grid item xs={12} sm={12}>
               <Controller
-                name='name'
+                name='category_name'
                 control={control}
                 render={({ field }) => (
                   <CustomTextField
@@ -120,8 +123,8 @@ const AddEditCategory = ({ open, isEditMode, categoryDetailData, onCancel }: Add
                       </>
                     }
                     placeholder={'Kresek'}
-                    error={!!errors.name}
-                    helperText={errors.name?.message}
+                    error={!!errors.category_name}
+                    helperText={errors.category_name?.message}
                   />
                 )}
               />
@@ -149,17 +152,17 @@ const AddEditCategory = ({ open, isEditMode, categoryDetailData, onCancel }: Add
             </Grid>
             <Grid item xs={12} sm={12}>
               <Controller
-                name={'status'}
+                name='is_active'
                 control={control}
                 render={({ field }) => (
                   <CustomAutocomplete
                     {...field}
                     fullWidth
-                    options={optionStatus || []}
-                    getOptionLabel={option => option?.label || ''}
-                    value={(field.value && optionStatus.find(opt => opt.value === field.value.value)) || null}
-                    isOptionEqualToValue={(option, value) => option?.value === value?.value}
-                    onChange={(_, value) => field.onChange(value)}
+                    options={optionStatus}
+                    getOptionLabel={option => option?.label ?? ''}
+                    value={field.value}
+                    isOptionEqualToValue={(option, value) => option.value === value?.value}
+                    onChange={(_, selectedOption) => field.onChange(selectedOption)}
                     renderInput={params => (
                       <CustomTextField
                         {...params}
@@ -168,9 +171,9 @@ const AddEditCategory = ({ open, isEditMode, categoryDetailData, onCancel }: Add
                             Status <span className='text-red-500'>*</span>
                           </>
                         }
-                        placeholder={'Aktif'}
-                        error={!!errors?.status}
-                        helperText={errors?.status?.message}
+                        placeholder='Aktif'
+                        error={!!errors?.is_active}
+                        helperText={errors?.is_active?.message}
                       />
                     )}
                   />
@@ -191,7 +194,7 @@ const AddEditCategory = ({ open, isEditMode, categoryDetailData, onCancel }: Add
       <ModalConfirmationComponent
         isOpen={isOpenConfirmationModalState}
         toggle={handleConfirmationModal}
-        title={'Perbarui Data Category'}
+        title={`${isEditMode ? 'Perbarui' : 'Menambahkan'} Data Category`}
         warning={'Tindakan ini akan menyimpan perubahan. Apakah Anda yakin ingin melanjutkan?'}
         icon={'tabler-send'}
         actionText={'Simpan'}

@@ -27,6 +27,8 @@ import {
 import type { ColumnDef, FilterFn } from '@tanstack/react-table'
 import type { RankingInfo } from '@tanstack/match-sorter-utils'
 
+import moment from 'moment'
+
 import TablePaginationComponent from '@components/TablePaginationComponent'
 
 // Style Imports
@@ -34,7 +36,6 @@ import tableStyles from '@core/styles/table.module.css'
 import styles from './styles.module.css'
 import CustomTextField from '@/@core/components/mui/TextField'
 
-import CustomSnackbar from '@/components/snackbar/CustomSnackbar'
 import ModalConfirmationComponent from '@/components/modal/confirmation/ModalConfirmation'
 import useDebounce from '@/@core/hooks/usedebounce'
 import type { MasterCategoryTableType } from '@/types/apps/masterCategoryTypes'
@@ -77,10 +78,6 @@ export const MasterCategoryOverview = () => {
   const [selectedId, setSelectedId] = useState<any>()
   const [searchValue, setSearchValue] = useState<string>('')
 
-  const [openSnackbar, setOpenSnackbar] = useState<boolean>(false)
-  const [snackbarMessage, setSnackbarMessage] = useState<string>('')
-  const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success')
-
   const {
     dataList,
     isLoading,
@@ -90,23 +87,12 @@ export const MasterCategoryOverview = () => {
     limit,
     page,
     order_column,
-    search
+    search,
+    total_data,
+    deleteMasterCategory
   } = useMasterCategoryStore()
 
   console.log(dataList, 'dataList')
-
-  const handleCloseSnackbar = () => {
-    setOpenSnackbar(false)
-  }
-
-  const handleSnackbar = useCallback(
-    (severity: 'success' | 'error', message: string) => {
-      setSnackbarSeverity(severity)
-      setSnackbarMessage(message)
-      setOpenSnackbar(true)
-    },
-    [setOpenSnackbar, setSnackbarMessage, setSnackbarSeverity]
-  )
 
   const handleAddCategory = () => {
     setSelectedCategory(null) // Reset data pengguna
@@ -141,14 +127,12 @@ export const MasterCategoryOverview = () => {
 
   const handleDeleteCategory = useCallback(() => {
     try {
-      handleSnackbar('success', 'Success Delete Asset Group')
-
+      deleteMasterCategory(selectedId?.id)
       setIsOpenConfirmationModalState(false)
     } catch (err: any) {
-      handleSnackbar('error', 'Error')
       console.error(err)
     }
-  }, [])
+  }, [deleteMasterCategory, selectedId])
 
   const debouncedSearchTerm = useDebounce(searchValue, 500)
 
@@ -157,12 +141,14 @@ export const MasterCategoryOverview = () => {
   }, [])
 
   useEffect(() => {
-    fetchMasterCategory({ limit, page, order_column, order_direction })
+    fetchMasterCategory()
   }, [limit, page, order_column, order_direction, search])
 
   useEffect(() => {
     if (dataList) {
       setCategoryState(dataList)
+    } else {
+      setCategoryState([])
     }
   }, [dataList])
 
@@ -209,17 +195,31 @@ export const MasterCategoryOverview = () => {
           </div>
         )
       },
-      columnHelper.accessor('name', {
+      columnHelper.accessor('category_name', {
         header: 'Nama',
-        cell: ({ row }) => <Typography className='text-xs'>{`${row.original.name || '-'}`}</Typography>
+        cell: ({ row }) => <Typography className='text-xs'>{`${row.original.category_name || '-'}`}</Typography>
       }),
       columnHelper.accessor('description', {
         header: 'Deskripsi',
         cell: ({ row }) => <Typography className='text-xs'>{`${row.original.description || '-'}`}</Typography>
       }),
-      columnHelper.accessor('status', {
+      columnHelper.accessor('is_active', {
         header: 'Status',
-        cell: ({ row }) => <Typography className='text-xs'>{`${row.original.status || '-'}`}</Typography>
+        cell: ({ row }) => (
+          <Typography className='text-xs'>{`${row.original.is_active ? 'Aktif' : 'Tidak Aktif'}`}</Typography>
+        )
+      }),
+      columnHelper.accessor('updated_at', {
+        header: 'Diperbarui pada',
+        cell: ({ row }) => (
+          <Typography className='text-xs'>{`${row.original.updated_at ? moment(row.original.updated_at).format('DD/MM/YYYY, HH:mm') : '-'}`}</Typography>
+        )
+      }),
+      columnHelper.accessor('created_at', {
+        header: 'Dibuat pada',
+        cell: ({ row }) => (
+          <Typography className='text-xs'>{`${row?.original?.created_at ? moment(row.original.created_at).format('DD/MM/YYYY, HH:mm') : '-'}`}</Typography>
+        )
       })
     ],
     []
@@ -377,7 +377,14 @@ export const MasterCategoryOverview = () => {
               </table>
             </div>
             <TablePagination
-              component={() => <TablePaginationComponent table={table as any} />}
+              component={() => (
+                <TablePaginationComponent
+                  table={table as any}
+                  isManualPagination
+                  totalData={total_data}
+                  setParamState={setQueryParams}
+                />
+              )}
               count={table.getFilteredRowModel().rows.length}
               rowsPerPage={table.getState().pagination.pageSize}
               page={table.getState().pagination.pageIndex}
@@ -394,19 +401,13 @@ export const MasterCategoryOverview = () => {
         categoryDetailData={selectedCategory}
         onCancel={handleCloseDialog}
       />
-      <CustomSnackbar
-        openSnackbar={openSnackbar}
-        snackbarSeverity={snackbarSeverity}
-        snackbarMessage={snackbarMessage}
-        handleCloseSnackbar={handleCloseSnackbar}
-      />
       <ModalConfirmationComponent
         isOpen={isOpenConfirmationModalState}
         toggle={() => handleConfirmationModal(selectedId)}
         title='Hapus Category'
         warning={
           <>
-            Aksi ini akan menghapus <strong>{selectedId?.name}</strong>. Apakah anda yakin?
+            Aksi ini akan menghapus <strong>{selectedId?.category_name}</strong>. Apakah anda yakin?
           </>
         }
         icon='tabler-trash'

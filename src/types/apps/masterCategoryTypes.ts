@@ -1,8 +1,10 @@
 export type MasterCategoryTableType = Partial<{
   id: number
-  name: string
+  category_name: string
   description: string
-  status: 'Active' | 'Inactive'
+  is_active: boolean
+  created_at: string
+  updated_at: string
 }>
 
 export type QueryParams = {
@@ -11,6 +13,7 @@ export type QueryParams = {
   search: string
   order_column: string
   order_direction: 'asc' | 'desc'
+  total_data: number
 }
 
 export type MasterCategoryStore = {
@@ -24,8 +27,10 @@ export type MasterCategoryStore = {
   search: string
   order_column: string
   order_direction: string
+  total_data: number
 
   setQueryParams: (params: Partial<QueryParams>) => void
-  fetchMasterCategory: (id: any) => Promise<void>
+  fetchMasterCategory: () => Promise<void>
   updateMasterCategory: (data: any, id: string) => Promise<boolean>
+  deleteMasterCategory: (id: string) => Promise<boolean>
 }

@@ -1,10 +1,12 @@
 import { z } from 'zod'
 
 export const categorySchema = z.object({
-  id: z.number(),
-  name: z.string(),
-  description: z.string(),
-  status: z.object({ label: z.string(), value: z.string() }, { message: 'Wajib diisi' })
+  category_name: z.string().min(1, { message: 'Wajib diisi.' }),
+  description: z.string().min(1, { message: 'Wajib diisi.' }),
+  is_active: z.object({
+    label: z.string(),
+    value: z.boolean()
+  })
 })
 
 export type CategorySchema = z.infer<typeof categorySchema>
