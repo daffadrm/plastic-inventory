@@ -206,13 +206,17 @@ export const MasterUnitOverview = () => {
       columnHelper.accessor('updated_at', {
         header: 'Diperbarui pada',
         cell: ({ row }) => (
-          <Typography className='text-xs'>{`${row.original.updated_at ? moment(row.original.updated_at).format('DD/MM/YYYY, HH:mm') : '-'}`}</Typography>
+          <Typography className='text-xs'>
+            {row?.original?.updated_at ? moment.utc(row.original.updated_at).local().format('DD/MM/YYYY, HH:mm') : '-'}
+          </Typography>
         )
       }),
       columnHelper.accessor('created_at', {
         header: 'Dibuat pada',
         cell: ({ row }) => (
-          <Typography className='text-xs'>{`${row?.original?.created_at ? moment(row.original.created_at).format('DD/MM/YYYY, HH:mm') : '-'}`}</Typography>
+          <Typography className='text-xs'>
+            {row?.original?.created_at ? moment.utc(row.original.created_at).local().format('DD/MM/YYYY, HH:mm') : '-'}
+          </Typography>
         )
       })
     ],
