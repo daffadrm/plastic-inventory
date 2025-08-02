@@ -27,6 +27,8 @@ import {
 import type { ColumnDef, FilterFn } from '@tanstack/react-table'
 import type { RankingInfo } from '@tanstack/match-sorter-utils'
 
+import moment from 'moment'
+
 import TablePaginationComponent from '@components/TablePaginationComponent'
 
 // Style Imports
@@ -172,12 +174,6 @@ export const MasterProductOverview = () => {
       return
     }
 
-    // setParamState(prev => ({
-    //   ...prev,
-    //   page: 1,
-    //   search: debouncedSearchTerm
-    // }))
-
     setQueryParams({ search: debouncedSearchTerm, page: 1 })
 
     table.setPageIndex(0)
@@ -242,6 +238,22 @@ export const MasterProductOverview = () => {
         header: 'Harga Beli',
         cell: ({ row }) => (
           <Typography className='text-xs text-right'>{`RP. ${row.original.harga_beli?.toLocaleString() || '-'}`}</Typography>
+        )
+      }),
+      columnHelper.accessor('updated_at', {
+        header: 'Diperbarui pada',
+        cell: ({ row }) => (
+          <Typography className='text-xs'>
+            {row?.original?.updated_at ? moment.utc(row.original.updated_at).local().format('DD/MM/YYYY, HH:mm') : '-'}
+          </Typography>
+        )
+      }),
+      columnHelper.accessor('created_at', {
+        header: 'Dibuat pada',
+        cell: ({ row }) => (
+          <Typography className='text-xs'>
+            {row?.original?.created_at ? moment.utc(row.original.created_at).local().format('DD/MM/YYYY, HH:mm') : '-'}
+          </Typography>
         )
       })
     ],

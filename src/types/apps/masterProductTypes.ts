@@ -9,6 +9,7 @@ export type MasterProductTableType = Partial<{
   minimum_stock: number
   supplier: string
   updated_at: string
+  created_at: string
 }>
 
 export type QueryParams = {
