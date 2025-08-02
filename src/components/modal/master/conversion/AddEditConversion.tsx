@@ -13,34 +13,93 @@ import ModalConfirmationComponent from '../../confirmation/ModalConfirmation'
 import type { ConversionSchema } from '@/schema/masterConversionSchema'
 import { conversionSchema } from '@/schema/masterConversionSchema'
 import { useMasterConversionStore } from '@/stores/masterConversionStore'
+import CustomAutocomplete from '@/@core/components/mui/Autocomplete'
 
+interface OptionProductType {
+  id: number
+  product_name: string
+  category_id: number
+  category_name: string
+  unit_id: number
+  unit_name: string
+  unit_symbol: string
+  minimum_stock: number
+  harga_beli: number
+  harga_jual: number
+  created_at: string
+  updated_at: string
+  current_stock: number
+}
+interface OptionUnitType {
+  id: number
+  unit_name: string
+  unit_symbol: string
+  unit_type: string
+  description: string
+  base_unit: boolean
+  conversion_to_base: number
+  created_at: string
+  updated_at: string
+}
 interface AddEditCategoryType {
   open: boolean
   isEditMode: boolean
   conversionDetailData?: any
   onCancel: () => void
+  dataOptionUnit: OptionUnitType[]
+  dataOptionProduct: OptionProductType[]
 }
-
-const optionStatus = [
-  {
-    label: 'Aktif',
-    value: 'Aktif'
-  },
-  {
-    label: 'Tidak Aktif',
-    value: 'Tidak Aktif'
-  }
-]
 
 export const defaultValues: ConversionSchema = {
   id: 0,
-  product_name: '',
-  from_unit: '',
-  to_unit: '',
-  multiplier: ''
+  product_name: {
+    id: 0,
+    product_name: '',
+    category_id: 0,
+    category_name: '',
+    unit_id: 0,
+    unit_name: '',
+    unit_symbol: '',
+    minimum_stock: 0,
+    harga_beli: 0,
+    harga_jual: 0,
+    created_at: '',
+    updated_at: '',
+    current_stock: 0
+  },
+  from_unit: {
+    id: 0,
+    unit_name: '',
+    unit_symbol: '',
+    unit_type: '',
+    base_unit: false,
+    conversion_to_base: 0,
+    description: '',
+    created_at: '',
+    updated_at: ''
+  },
+  to_unit: {
+    id: 0,
+    unit_name: '',
+    unit_symbol: '',
+    unit_type: '',
+    base_unit: false,
+    conversion_to_base: 0,
+    description: '',
+    created_at: '',
+    updated_at: ''
+  },
+  conversion_value: 0
 }
 
-const AddEditConversion = ({ open, isEditMode, conversionDetailData, onCancel }: AddEditCategoryType) => {
+const AddEditConversion = ({
+  open,
+  isEditMode,
+  conversionDetailData,
+  onCancel,
+  dataOptionProduct,
+  dataOptionUnit
+}: AddEditCategoryType) => {
   const { updateMasterConversion } = useMasterConversionStore()
   const [isOpenConfirmationModalState, setIsOpenConfirmationModalState] = useState<boolean>(false)
 
@@ -61,19 +120,48 @@ const AddEditConversion = ({ open, isEditMode, conversionDetailData, onCancel }:
 
   const handleSubmitForm = async (dataParam: any) => {
     console.log(dataParam, 'dataParam')
-    updateMasterConversion(dataParam?.id, dataParam)
-    reset(defaultValues)
-    handleConfirmationModal()
-    onCancel()
+
+    const payload = {
+      product_id: dataParam?.product_name?.id || '',
+      from_unit_id: dataParam?.from_unit?.id,
+      to_unit_id: dataParam?.to_unit?.id,
+      conversion_value: dataParam?.conversion_value
+    } as any
+
+    const success = await updateMasterConversion(conversionDetailData?.id, payload)
+
+    if (success) {
+      reset(defaultValues)
+      handleConfirmationModal()
+      onCancel()
+    }
+  }
+
+  const MAX_SAFE_NUMBER = 90071
+
+  const handleFormattedChange = (name: string, input: string, onChange: (value: number | null) => void) => {
+    const raw = input.replace(/\D/g, '')
+
+    const numeric = raw ? Number(raw) : 0
+
+    if (numeric !== null && numeric > MAX_SAFE_NUMBER) return
+
+    onChange(numeric)
   }
 
   useEffect(() => {
     if (conversionDetailData && open) {
       reset({
         ...conversionDetailData,
-        status: optionStatus.find(
-          status => status.value?.toLowerCase() === conversionDetailData?.status?.toLowerCase()
-        ) ?? {
+        product_name: dataOptionProduct?.find(product => product?.id === conversionDetailData?.product?.id) ?? {
+          label: '',
+          value: ''
+        },
+        from_unit: dataOptionUnit?.find(from => from?.id === conversionDetailData?.from_unit_id) ?? {
+          label: '',
+          value: ''
+        },
+        to_unit: dataOptionUnit?.find(to => to?.id === conversionDetailData?.to_unit_id) ?? {
           label: '',
           value: ''
         }
@@ -81,7 +169,7 @@ const AddEditConversion = ({ open, isEditMode, conversionDetailData, onCancel }:
     } else {
       reset(defaultValues)
     }
-  }, [conversionDetailData, reset, open])
+  }, [conversionDetailData, reset, open, dataOptionProduct, dataOptionUnit])
 
   return (
     <Dialog open={open} maxWidth='sm' fullWidth scroll='body'>
@@ -108,65 +196,95 @@ const AddEditConversion = ({ open, isEditMode, conversionDetailData, onCancel }:
                 name='product_name'
                 control={control}
                 render={({ field }) => (
-                  <CustomTextField
+                  <CustomAutocomplete
                     {...field}
                     fullWidth
-                    label={
-                      <>
-                        Nama Produk <span className='text-red-500'>*</span>
-                      </>
-                    }
-                    placeholder={'Kresek'}
-                    error={!!errors.product_name}
-                    helperText={errors.product_name?.message}
+                    options={dataOptionProduct || []}
+                    getOptionLabel={option => option?.product_name || ''}
+                    value={field.value || null}
+                    isOptionEqualToValue={(option, value) => option?.id === value?.id}
+                    onChange={(_, value) => field.onChange(value)}
+                    renderInput={params => (
+                      <CustomTextField
+                        {...params}
+                        label={
+                          <>
+                            Nama Produk <span className='text-red-500'>*</span>
+                          </>
+                        }
+                        placeholder='Mika'
+                        error={!!errors?.product_name}
+                        helperText={errors?.product_name?.message}
+                      />
+                    )}
                   />
                 )}
               />
             </Grid>
 
-            <Grid item xs={12} sm={12}>
+            <Grid item xs={12} sm={4}>
               <Controller
                 name='from_unit'
                 control={control}
                 render={({ field }) => (
-                  <CustomTextField
+                  <CustomAutocomplete
                     {...field}
                     fullWidth
-                    label={
-                      <>
-                        Dari Unit <span className='text-red-500'>*</span>
-                      </>
-                    }
-                    placeholder={'Pcs'}
-                    error={!!errors.from_unit}
-                    helperText={errors.from_unit?.message}
+                    options={dataOptionUnit || []}
+                    getOptionLabel={option => option?.unit_symbol || ''}
+                    value={field.value || null}
+                    isOptionEqualToValue={(option, value) => option?.id === value?.id}
+                    onChange={(_, value) => field.onChange(value)}
+                    renderInput={params => (
+                      <CustomTextField
+                        {...params}
+                        label={
+                          <>
+                            Dari Unit <span className='text-red-500'>*</span>
+                          </>
+                        }
+                        placeholder='Mika'
+                        error={!!errors?.from_unit}
+                        helperText={errors?.from_unit?.message}
+                      />
+                    )}
                   />
                 )}
               />
             </Grid>
-            <Grid item xs={12} sm={12}>
+            <Grid item xs={12} sm={4}>
               <Controller
                 name='to_unit'
                 control={control}
                 render={({ field }) => (
-                  <CustomTextField
+                  <CustomAutocomplete
                     {...field}
                     fullWidth
-                    label={
-                      <>
-                        Ke Unit <span className='text-red-500'>*</span>
-                      </>
-                    }
-                    placeholder={'Pcs'}
-                    error={!!errors.to_unit}
-                    helperText={errors.to_unit?.message}
+                    options={dataOptionUnit || []}
+                    getOptionLabel={option => option?.unit_symbol || ''}
+                    value={field.value || null}
+                    isOptionEqualToValue={(option, value) => option?.id === value?.id}
+                    onChange={(_, value) => field.onChange(value)}
+                    renderInput={params => (
+                      <CustomTextField
+                        {...params}
+                        label={
+                          <>
+                            Ke Unit <span className='text-red-500'>*</span>
+                          </>
+                        }
+                        placeholder='Mika'
+                        error={!!errors?.to_unit}
+                        helperText={errors?.to_unit?.message}
+                      />
+                    )}
                   />
                 )}
               />
             </Grid>
-            <Grid item xs={12} sm={12}>
+            <Grid item xs={12} sm={4}>
               <Controller
-                name='multiplier'
+                name='conversion_value'
                 control={control}
                 render={({ field }) => (
                   <CustomTextField
@@ -178,8 +296,18 @@ const AddEditConversion = ({ open, isEditMode, conversionDetailData, onCancel }:
                       </>
                     }
                     placeholder={'Pcs'}
-                    error={!!errors.multiplier}
-                    helperText={errors.multiplier?.message}
+                    type='text'
+                    inputMode='numeric'
+                    error={!!errors.conversion_value}
+                    helperText={errors.conversion_value?.message}
+                    onKeyDown={e => {
+                      const invalidChars = ['-', '+', 'e', '.', ',']
+
+                      if (invalidChars.includes(e.key)) {
+                        e.preventDefault()
+                      }
+                    }}
+                    onChange={e => handleFormattedChange('conversion_value', e.target.value, field.onChange)}
                   />
                 )}
               />
@@ -198,7 +326,7 @@ const AddEditConversion = ({ open, isEditMode, conversionDetailData, onCancel }:
       <ModalConfirmationComponent
         isOpen={isOpenConfirmationModalState}
         toggle={handleConfirmationModal}
-        title={'Perbarui Data Konversi'}
+        title={`${isEditMode ? 'Perbarui' : 'Tambah'} Data Konversi`}
         warning={'Tindakan ini akan menyimpan perubahan. Apakah Anda yakin ingin melanjutkan?'}
         icon={'tabler-send'}
         actionText={'Simpan'}

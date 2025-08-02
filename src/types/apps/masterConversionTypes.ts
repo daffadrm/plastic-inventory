@@ -1,10 +1,16 @@
 export type MasterConversionTableType = Partial<{
   id: number
-  product_id: string
+  product_id: number
   product_name: string
-  from_unit: string
-  to_unit: string
-  multiplier: string
+  from_unit_id: number
+  from_unit_name: string
+  from_unit_symbol: string
+  to_unit_id: number
+  to_unit_name: string
+  to_unit_symbol: string
+  conversion_value: number
+  created_at: string
+  updated_at: string
 }>
 
 export type QueryParams = {
@@ -26,8 +32,10 @@ export type MasterConversionStore = {
   search: string
   order_column: string
   order_direction: string
+  total_data: number
 
   setQueryParams: (params: Partial<QueryParams>) => void
-  fetchMasterConversion: (id: any) => Promise<void>
-  updateMasterConversion: (data: any, id: string) => Promise<boolean>
+  fetchMasterConversion: () => Promise<void>
+  updateMasterConversion: (id: string, data: any) => Promise<boolean>
+  deleteMasterConversion: (id: string) => Promise<boolean>
 }

@@ -27,6 +27,8 @@ import {
 import type { ColumnDef, FilterFn } from '@tanstack/react-table'
 import type { RankingInfo } from '@tanstack/match-sorter-utils'
 
+import moment from 'moment'
+
 import TablePaginationComponent from '@components/TablePaginationComponent'
 
 // Style Imports
@@ -34,12 +36,13 @@ import tableStyles from '@core/styles/table.module.css'
 import styles from './styles.module.css'
 import CustomTextField from '@/@core/components/mui/TextField'
 
-import CustomSnackbar from '@/components/snackbar/CustomSnackbar'
 import ModalConfirmationComponent from '@/components/modal/confirmation/ModalConfirmation'
 import useDebounce from '@/@core/hooks/usedebounce'
 import type { MasterConversionTableType } from '@/types/apps/masterConversionTypes'
 import { useMasterConversionStore } from '@/stores/masterConversionStore'
 import AddEditConversion from '@/components/modal/master/conversion/AddEditConversion'
+import { useMasterUnitsStore } from '@/stores/masterUnitStore'
+import { useMasterProductStore } from '@/stores/masterProductStore'
 
 declare module '@tanstack/table-core' {
   interface FilterFns {
@@ -69,17 +72,13 @@ const columnHelper = createColumnHelper<MasterConversionTableType>()
 export const MasterConversionOverview = () => {
   const isFirstRender = useRef(true)
   const [rowSelection, setRowSelection] = useState({})
-  const [categoryState, setCategoryState] = useState<MasterConversionTableType[]>([])
+  const [conversionState, setConversionState] = useState<MasterConversionTableType[]>([])
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
   const [selectedConversion, setSelectedConversion] = useState<any>(null)
   const [isOpenConfirmationModalState, setIsOpenConfirmationModalState] = useState<boolean>(false)
   const [selectedId, setSelectedId] = useState<any>()
   const [searchValue, setSearchValue] = useState<string>('')
-
-  const [openSnackbar, setOpenSnackbar] = useState<boolean>(false)
-  const [snackbarMessage, setSnackbarMessage] = useState<string>('')
-  const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success')
 
   const {
     dataList,
@@ -90,23 +89,12 @@ export const MasterConversionOverview = () => {
     limit,
     page,
     order_column,
-    search
+    search,
+    deleteMasterConversion
   } = useMasterConversionStore()
 
-  console.log(dataList, 'dataList')
-
-  const handleCloseSnackbar = () => {
-    setOpenSnackbar(false)
-  }
-
-  const handleSnackbar = useCallback(
-    (severity: 'success' | 'error', message: string) => {
-      setSnackbarSeverity(severity)
-      setSnackbarMessage(message)
-      setOpenSnackbar(true)
-    },
-    [setOpenSnackbar, setSnackbarMessage, setSnackbarSeverity]
-  )
+  const { fetchOptionUnit, dataOptionUnit } = useMasterUnitsStore()
+  const { fetchOptionProduct, dataOptionProduct } = useMasterProductStore()
 
   const handleAddConversion = () => {
     setSelectedConversion(null) // Reset data pengguna
@@ -141,14 +129,12 @@ export const MasterConversionOverview = () => {
 
   const handleDeleteConversion = useCallback(() => {
     try {
-      handleSnackbar('success', 'Success Konversi')
-
+      deleteMasterConversion(selectedId?.id)
       setIsOpenConfirmationModalState(false)
     } catch (err: any) {
-      handleSnackbar('error', 'Error')
       console.error(err)
     }
-  }, [])
+  }, [deleteMasterConversion, selectedId])
 
   const debouncedSearchTerm = useDebounce(searchValue, 500)
 
@@ -157,14 +143,21 @@ export const MasterConversionOverview = () => {
   }, [])
 
   useEffect(() => {
-    fetchMasterConversion({ limit, page, order_column, order_direction })
+    fetchMasterConversion()
   }, [limit, page, order_column, order_direction, search])
 
   useEffect(() => {
     if (dataList) {
-      setCategoryState(dataList)
+      setConversionState(dataList)
+    } else {
+      setConversionState([])
     }
   }, [dataList])
+
+  useEffect(() => {
+    fetchOptionUnit()
+    fetchOptionProduct()
+  }, [])
 
   useEffect(() => {
     if (isFirstRender.current) {
@@ -213,24 +206,40 @@ export const MasterConversionOverview = () => {
         header: 'Nama Produk',
         cell: ({ row }) => <Typography className='text-xs'>{`${row.original.product_name || '-'}`}</Typography>
       }),
-      columnHelper.accessor('from_unit', {
+      columnHelper.accessor('from_unit_symbol', {
         header: 'Dari unit',
-        cell: ({ row }) => <Typography className='text-xs'>{`${row.original.from_unit || '-'}`}</Typography>
+        cell: ({ row }) => <Typography className='text-xs'>{`${row.original.from_unit_symbol || '-'}`}</Typography>
       }),
-      columnHelper.accessor('to_unit', {
+      columnHelper.accessor('to_unit_symbol', {
         header: 'Ke unit',
-        cell: ({ row }) => <Typography className='text-xs'>{`${row.original.to_unit || '-'}`}</Typography>
+        cell: ({ row }) => <Typography className='text-xs'>{`${row.original.to_unit_symbol || '-'}`}</Typography>
       }),
-      columnHelper.accessor('multiplier', {
+      columnHelper.accessor('conversion_value', {
         header: 'Pengkali',
-        cell: ({ row }) => <Typography className='text-xs'>{`${row.original.multiplier || '-'}`}</Typography>
+        cell: ({ row }) => <Typography className='text-xs'>{`${row.original.conversion_value || '-'}`}</Typography>
+      }),
+      columnHelper.accessor('updated_at', {
+        header: 'Diperbarui pada',
+        cell: ({ row }) => (
+          <Typography className='text-xs'>
+            {row?.original?.updated_at ? moment.utc(row.original.updated_at).local().format('DD/MM/YYYY, HH:mm') : '-'}
+          </Typography>
+        )
+      }),
+      columnHelper.accessor('created_at', {
+        header: 'Dibuat pada',
+        cell: ({ row }) => (
+          <Typography className='text-xs'>
+            {row?.original?.created_at ? moment.utc(row.original.created_at).local().format('DD/MM/YYYY, HH:mm') : '-'}
+          </Typography>
+        )
       })
     ],
     []
   )
 
   const table = useReactTable({
-    data: categoryState as MasterConversionTableType[],
+    data: conversionState as MasterConversionTableType[],
     columns,
     filterFns: {
       fuzzy: fuzzyFilter
@@ -397,13 +406,10 @@ export const MasterConversionOverview = () => {
         isEditMode={isEditMode}
         conversionDetailData={selectedConversion}
         onCancel={handleCloseDialog}
+        dataOptionUnit={dataOptionUnit}
+        dataOptionProduct={dataOptionProduct}
       />
-      <CustomSnackbar
-        openSnackbar={openSnackbar}
-        snackbarSeverity={snackbarSeverity}
-        snackbarMessage={snackbarMessage}
-        handleCloseSnackbar={handleCloseSnackbar}
-      />
+
       <ModalConfirmationComponent
         isOpen={isOpenConfirmationModalState}
         toggle={() => handleConfirmationModal(selectedId)}

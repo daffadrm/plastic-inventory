@@ -7,6 +7,7 @@ import {
   createMasterProduct,
   deleteMasterProduct,
   getMasterProductList,
+  getSearchMasterProduct,
   updateMasterProduct
 } from '@/app/server/master/product'
 
@@ -14,7 +15,7 @@ export const useMasterProductStore = create<MasterProductStore>((set, get) => ({
   isLoading: false,
   isError: false,
   dataList: null,
-  dataOptionCategory: null,
+  dataOptionProduct: null,
   isLoadingUpdate: false,
 
   page: 1,
@@ -56,8 +57,8 @@ export const useMasterProductStore = create<MasterProductStore>((set, get) => ({
 
       set({ dataList: response?.data || null, total_data: response?.meta?.total || 0 })
     } catch (err: any) {
-      set({ isError: true })
-      set({ dataList: null })
+      console.log(err, 'err')
+      set({ isError: true, dataList: null })
 
       useSnackbarStore.getState().showSnackbar(err?.message || 'Something went wrong', 'error')
     } finally {
@@ -109,6 +110,18 @@ export const useMasterProductStore = create<MasterProductStore>((set, get) => ({
       useSnackbarStore.getState().showSnackbar(err?.message || 'hapus gagal', 'error')
 
       return false
+    }
+  },
+  fetchOptionProduct: async () => {
+    try {
+      const response = await getSearchMasterProduct()
+
+      set({ dataOptionProduct: response?.data || null })
+    } catch (err: any) {
+      set({ isError: true, dataOptionProduct: null })
+      useSnackbarStore.getState().showSnackbar(err?.message || 'hapus gagal', 'error')
+    } finally {
+      set({ isLoadingUpdate: false })
     }
   }
 }))

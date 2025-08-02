@@ -13,7 +13,7 @@ export const getMasterProductList = async (params?: {
 
   if (params?.page) query.append('page', String(params.page))
   if (params?.limit) query.append('limit', String(params.limit))
-  if (params?.search) query.append('search', params.search)
+  if (params?.search) query.append('query', params.search)
   if (params?.order_column) query.append('order_column', String(params.order_column))
   if (params?.order_direction) query.append('order_direction', String(params.order_direction))
 
@@ -80,6 +80,12 @@ export const createMasterProduct = async (data: any) => {
 
 export const deleteMasterProduct = async (id: string) => {
   const response = await apiService(`${versioning1}/products/${id}`, 'DELETE', null, getHeader())
+
+  return response
+}
+
+export const getSearchMasterProduct = async () => {
+  const response = apiService(`${versioning1}/products/search`, 'GET', null, getHeader())
 
   return response
 }

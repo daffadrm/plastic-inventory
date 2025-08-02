@@ -23,6 +23,7 @@ export type MasterProductStore = {
   isLoading: boolean
   isError: boolean
   isLoadingUpdate: boolean
+  dataOptionProduct: any
 
   page: number
   limit: number
@@ -35,4 +36,5 @@ export type MasterProductStore = {
   fetchMasterProduct: () => Promise<void>
   updateMasterProduct: (data: any, id: string) => Promise<boolean>
   deleteMasterProduct: (id: string) => Promise<boolean>
+  fetchOptionProduct: () => Promise<void>
 }

@@ -154,6 +154,8 @@ export const MasterProductOverview = () => {
   useEffect(() => {
     if (dataList) {
       setProductState(dataList)
+    } else {
+      setProductState([])
     }
   }, [dataList])
 

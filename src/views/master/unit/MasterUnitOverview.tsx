@@ -70,7 +70,7 @@ const columnHelper = createColumnHelper<MasterUnitTableType>()
 export const MasterUnitOverview = () => {
   const isFirstRender = useRef(true)
   const [rowSelection, setRowSelection] = useState({})
-  const [productState, setProductState] = useState<MasterUnitTableType[]>([])
+  const [unitState, setUnitState] = useState<MasterUnitTableType[]>([])
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
   const [selectedUnits, setSelectedUnits] = useState<any>(null)
@@ -144,9 +144,9 @@ export const MasterUnitOverview = () => {
 
   useEffect(() => {
     if (dataList) {
-      setProductState(dataList)
+      setUnitState(dataList)
     } else {
-      setProductState([])
+      setUnitState([])
     }
   }, [dataList])
 
@@ -224,7 +224,7 @@ export const MasterUnitOverview = () => {
   )
 
   const table = useReactTable({
-    data: productState as MasterUnitTableType[],
+    data: unitState as MasterUnitTableType[],
     columns,
     filterFns: {
       fuzzy: fuzzyFilter

@@ -3,7 +3,12 @@ import { create } from 'zustand'
 import { useSnackbarStore } from './snackbarStore'
 
 import type { MasterConversionStore, QueryParams } from '@/types/apps/masterConversionTypes'
-import { getMasterConversionList, updateMasterConversion } from '@/app/server/master/conversion'
+import {
+  createMasterConversion,
+  deleteMasterConversion,
+  getMasterConversionList,
+  updateMasterConversion
+} from '@/app/server/master/conversion'
 
 export const useMasterConversionStore = create<MasterConversionStore>((set, get) => ({
   isLoading: false,
@@ -16,6 +21,7 @@ export const useMasterConversionStore = create<MasterConversionStore>((set, get)
   search: '',
   order_column: 'username',
   order_direction: 'asc',
+  total_data: 0,
 
   setQueryParams: (params: Partial<QueryParams>) =>
     set(state => ({
@@ -47,7 +53,7 @@ export const useMasterConversionStore = create<MasterConversionStore>((set, get)
     try {
       const response = await getMasterConversionList(finalParams)
 
-      set({ dataList: response?.data || null })
+      set({ dataList: response?.data || null, total_data: response?.meta?.total || 0 })
     } catch (err: any) {
       set({ isError: true })
       set({ dataList: null })
@@ -58,21 +64,48 @@ export const useMasterConversionStore = create<MasterConversionStore>((set, get)
     }
   },
 
-  updateMasterConversion: async (data: any, id: string) => {
+  updateMasterConversion: async (id: string, data: any) => {
     const { fetchMasterConversion } = get()
 
     set({ isLoadingUpdate: true })
 
     try {
-      const response = await updateMasterConversion(data, id)
+      let response
+
+      if (id) {
+        response = await updateMasterConversion(id, data)
+      } else {
+        response = await createMasterConversion(data)
+      }
 
       useSnackbarStore.getState().showSnackbar(response?.meta?.message || 'update berhasil', 'success')
-      await fetchMasterConversion({ land_id: id })
+      await fetchMasterConversion()
 
       return true
     } catch (err: any) {
       set({ isError: true })
       useSnackbarStore.getState().showSnackbar(err?.message || 'update gagal', 'error')
+
+      return false
+    } finally {
+      set({ isLoadingUpdate: false })
+    }
+  },
+  deleteMasterConversion: async (id: string) => {
+    const { fetchMasterConversion } = get()
+
+    set({ isLoadingUpdate: true })
+
+    try {
+      const response = await deleteMasterConversion(id)
+
+      useSnackbarStore.getState().showSnackbar(response?.meta?.message || 'hapus berhasil', 'success')
+      await fetchMasterConversion()
+
+      return true
+    } catch (err: any) {
+      set({ isError: true })
+      useSnackbarStore.getState().showSnackbar(err?.message || 'hapus gagal', 'error')
 
       return false
     } finally {
