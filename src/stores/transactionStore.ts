@@ -12,10 +12,11 @@ export const useTransactionStore = create<TransactionStore>((set, get) => ({
   isLoadingUpdate: false,
 
   page: 1,
-  limit: 10,
+  limit: 30,
   search: '',
-  order_column: 'username',
+  order_column: 'created_at',
   order_direction: 'asc',
+  total_data: 0,
 
   setQueryParams: (params: Partial<QueryParams>) =>
     set(state => ({
@@ -41,16 +42,16 @@ export const useTransactionStore = create<TransactionStore>((set, get) => ({
       limit: overrideParams?.limit ?? limit,
       search: overrideParams?.search ?? search,
       order_column: overrideParams?.order_column ?? order_column,
-      order_direction: overrideParams?.order_direction ?? order_direction
+      order_direction: overrideParams?.order_direction ?? order_direction,
+      type: 'all'
     }
 
     try {
       const response = await getTransactionList(finalParams)
 
-      set({ dataList: response?.data || null })
+      set({ dataList: response?.data || null, total_data: response?.meta?.total || 0 })
     } catch (err: any) {
-      set({ isError: true })
-      set({ dataList: null })
+      set({ isError: true, dataList: null, total_data: 0 })
 
       useSnackbarStore.getState().showSnackbar(err?.message || 'Something went wrong', 'error')
     } finally {

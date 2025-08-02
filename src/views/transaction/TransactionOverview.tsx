@@ -27,6 +27,8 @@ import {
 import type { ColumnDef, FilterFn } from '@tanstack/react-table'
 import type { RankingInfo } from '@tanstack/match-sorter-utils'
 
+import moment from 'moment'
+
 import TablePaginationComponent from '@components/TablePaginationComponent'
 
 // Style Imports
@@ -70,8 +72,18 @@ export const TransactionOverview = () => {
 
   const [searchValue, setSearchValue] = useState<string>('')
 
-  const { dataList, isLoading, fetchTransaction, setQueryParams, order_direction, limit, page, order_column, search } =
-    useTransactionStore()
+  const {
+    dataList,
+    isLoading,
+    fetchTransaction,
+    setQueryParams,
+    total_data,
+    order_direction,
+    limit,
+    page,
+    order_column,
+    search
+  } = useTransactionStore()
 
   console.log(dataList, 'dataList')
 
@@ -92,7 +104,7 @@ export const TransactionOverview = () => {
   }, [])
 
   useEffect(() => {
-    fetchTransaction({ limit, page, order_column, order_direction })
+    fetchTransaction()
   }, [limit, page, order_column, order_direction, search])
 
   useEffect(() => {
@@ -121,33 +133,45 @@ export const TransactionOverview = () => {
 
   const columns = useMemo<ColumnDef<TransactionTableType, any>[]>(
     () => [
-      columnHelper.accessor('number_transaction', {
-        header: 'Nomor Transaksi',
-        cell: ({ row }) => <Typography className='text-xs'>{`${row.original.number_transaction || '-'}`}</Typography>
+      columnHelper.accessor('created_at', {
+        header: 'Tanggal Transaksi',
+        cell: ({ row }) => (
+          <Typography className='text-xs'>
+            {' '}
+            {row?.original?.created_at ? moment.utc(row.original.created_at).local().format('DD/MM/YYYY, HH:mm') : '-'}
+          </Typography>
+        )
       }),
-      columnHelper.accessor('name_product', {
+      columnHelper.accessor('product_name', {
         header: 'Nama Produk',
-        cell: ({ row }) => <Typography className='text-xs'>{`${row.original.name_product || '-'}`}</Typography>
+        cell: ({ row }) => <Typography className='text-xs'>{`${row.original.product_name || '-'}`}</Typography>
       }),
       columnHelper.accessor('quantity', {
         header: 'quantity',
         cell: ({ row }) => <Typography className='text-xs'>{`${row.original.quantity || '-'}`}</Typography>
       }),
-      columnHelper.accessor('unit', {
+      columnHelper.accessor('unit_name', {
         header: 'Unit',
-        cell: ({ row }) => <Typography className='text-xs'>{`${row.original.unit || '-'}`}</Typography>
+        cell: ({ row }) => <Typography className='text-xs'>{`${row.original.unit_name || '-'}`}</Typography>
       }),
-      columnHelper.accessor('type', {
+
+      columnHelper.accessor('movement_type', {
         header: 'Tipe',
-        cell: ({ row }) => <Typography className='text-xs'>{`${row.original.type || '-'}`}</Typography>
+        cell: ({ row }) => (
+          <Typography className='text-xs'>{`${row.original.movement_type === 'in' ? 'Masuk' : 'Keluar'}`}</Typography>
+        )
       }),
-      columnHelper.accessor('created_by', {
+      columnHelper.accessor('username', {
         header: 'Dibuat oleh',
-        cell: ({ row }) => <Typography className='text-xs'>{`${row.original.created_by || '-'}`}</Typography>
+        cell: ({ row }) => <Typography className='text-xs'>{`${row.original.username || '-'}`}</Typography>
       }),
-      columnHelper.accessor('created_at', {
-        header: 'Dibuat pada',
-        cell: ({ row }) => <Typography className='text-xs'>{`${row.original.created_at || '-'}`}</Typography>
+      columnHelper.accessor('updated_at', {
+        header: 'Diperbarui pada',
+        cell: ({ row }) => (
+          <Typography className='text-xs'>
+            {row?.original?.updated_at ? moment.utc(row.original.updated_at).local().format('DD/MM/YYYY, HH:mm') : '-'}
+          </Typography>
+        )
       })
     ],
     []
@@ -297,7 +321,14 @@ export const TransactionOverview = () => {
               </table>
             </div>
             <TablePagination
-              component={() => <TablePaginationComponent table={table as any} />}
+              component={() => (
+                <TablePaginationComponent
+                  table={table as any}
+                  isManualPagination
+                  totalData={total_data}
+                  setParamState={setQueryParams}
+                />
+              )}
               count={table.getFilteredRowModel().rows.length}
               rowsPerPage={table.getState().pagination.pageSize}
               page={table.getState().pagination.pageIndex}

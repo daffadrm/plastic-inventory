@@ -1,11 +1,18 @@
 export type TransactionTableType = Partial<{
-  number_transaction: string
-  name_product: string
-  quantity: string
-  unit: string
-  type: string
-  created_by: string
-  created_at: number
+  id: string
+  product_id: number
+  quantity: number
+  unit_id: number
+  movement_type: 'in' | 'out' // disesuaikan jika hanya ada 2 jenis
+  notes: string
+  date: string
+  user_id: string
+  created_at: string
+  updated_at: string
+  deleted_at: string | null
+  product_name: string
+  unit_name: string
+  username: string
 }>
 
 export type QueryParams = {
@@ -26,7 +33,8 @@ export type TransactionStore = {
   search: string
   order_column: string
   order_direction: string
+  total_data: number
 
   setQueryParams: (params: Partial<QueryParams>) => void
-  fetchTransaction: (id: any) => Promise<void>
+  fetchTransaction: () => Promise<void>
 }
