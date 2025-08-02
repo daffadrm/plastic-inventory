@@ -5,6 +5,7 @@ export type MasterProductTableType = Partial<{
   unit_symbol: string
   harga_jual: number
   harga_beli: number
+  current_stock: number
   minimum_stock: number
   supplier: string
   updated_at: string

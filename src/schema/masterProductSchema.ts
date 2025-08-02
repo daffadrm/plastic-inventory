@@ -28,6 +28,7 @@ export const productSchema = z.object({
     { message: 'Wajib diisi' }
   ),
   minimum_stock: z.coerce.number().optional(),
+  current_stock: z.coerce.number().optional(),
 
   harga_jual: z.number(),
   harga_beli: z.number()

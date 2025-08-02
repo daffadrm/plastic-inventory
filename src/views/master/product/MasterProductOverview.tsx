@@ -220,8 +220,14 @@ export const MasterProductOverview = () => {
         header: 'Satuan',
         cell: ({ row }) => <Typography className='text-xs'>{`${row.original.unit_symbol || '-'}`}</Typography>
       }),
-      columnHelper.accessor('minimum_stock', {
+      columnHelper.accessor('current_stock', {
         header: 'Stok',
+        cell: ({ row }) => (
+          <Typography className='text-xs text-right'>{`${row.original.current_stock?.toLocaleString() || '-'}`}</Typography>
+        )
+      }),
+      columnHelper.accessor('minimum_stock', {
+        header: 'Minimum Stok',
         cell: ({ row }) => (
           <Typography className='text-xs text-right'>{`${row.original.minimum_stock?.toLocaleString() || '-'}`}</Typography>
         )

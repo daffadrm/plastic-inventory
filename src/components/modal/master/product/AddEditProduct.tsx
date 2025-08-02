@@ -44,21 +44,6 @@ interface AddEditProductType {
   dataOptionUnit: OptionUnitType[]
 }
 
-// const optionCategory = [
-//   {
-//     label: 'Kresek',
-//     value: 'Kresek'
-//   },
-//   {
-//     label: 'Sterofoam',
-//     value: 'Sterofoam'
-//   },
-//   {
-//     label: 'Mika',
-//     value: 'Mika'
-//   }
-// ]
-
 export const defaultValues: ProductSchema = {
   product_name: '',
   category: {
@@ -80,6 +65,7 @@ export const defaultValues: ProductSchema = {
     created_at: '',
     updated_at: ''
   },
+  current_stock: 0,
   minimum_stock: 0,
   harga_jual: 0,
   harga_beli: 0
@@ -117,6 +103,7 @@ const AddEditProduct = ({
       harga_beli: dataParam?.harga_beli,
       product_name: dataParam?.product_name,
       minimum_stock: dataParam?.minimum_stock,
+      current_stock: dataParam?.current_stock,
       unit_id: dataParam?.unit_symbol.id,
       category_id: dataParam?.category?.id
     } as any
@@ -233,7 +220,7 @@ const AddEditProduct = ({
             </Grid>
             <Grid item xs={12} sm={4}>
               <Controller
-                name='minimum_stock'
+                name='current_stock'
                 control={control}
                 render={({ field }) => (
                   <CustomTextField
@@ -242,6 +229,37 @@ const AddEditProduct = ({
                     label={
                       <>
                         Stok <span className='text-red-500'>*</span>
+                      </>
+                    }
+                    value={field.value === 0 ? 0 : field.value ?? ''} // pastikan value selalu ada
+                    type='text'
+                    inputMode='numeric'
+                    placeholder={'0'}
+                    error={!!errors.current_stock}
+                    helperText={errors.current_stock?.message}
+                    onKeyDown={e => {
+                      const invalidChars = ['-', '+', 'e', '.', ',']
+
+                      if (invalidChars.includes(e.key)) {
+                        e.preventDefault()
+                      }
+                    }}
+                    onChange={e => handleFormattedChange('current_stock', e.target.value, field.onChange)}
+                  />
+                )}
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <Controller
+                name='minimum_stock'
+                control={control}
+                render={({ field }) => (
+                  <CustomTextField
+                    {...field}
+                    fullWidth
+                    label={
+                      <>
+                        Minimun Stok <span className='text-red-500'>*</span>
                       </>
                     }
                     value={field.value === 0 ? 0 : field.value ?? ''} // pastikan value selalu ada
