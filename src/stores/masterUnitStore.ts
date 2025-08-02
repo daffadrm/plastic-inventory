@@ -3,13 +3,20 @@ import { create } from 'zustand'
 import { useSnackbarStore } from './snackbarStore'
 
 import type { MasterUnitStore, QueryParams } from '@/types/apps/masterUnitTypes'
-import { createMasterUnits, deleteMasterUnits, getMasterUnitList, updateMasterUnits } from '@/app/server/master/unit'
+import {
+  createMasterUnits,
+  deleteMasterUnits,
+  getMasterUnitList,
+  getSearchMasterUnit,
+  updateMasterUnits
+} from '@/app/server/master/unit'
 
 export const useMasterUnitsStore = create<MasterUnitStore>((set, get) => ({
   isLoading: false,
   isError: false,
   dataList: null,
   isLoadingUpdate: false,
+  dataOptionUnit: null,
 
   page: 1,
   limit: 10,
@@ -104,6 +111,18 @@ export const useMasterUnitsStore = create<MasterUnitStore>((set, get) => ({
       useSnackbarStore.getState().showSnackbar(err?.message || 'hapus gagal', 'error')
 
       return false
+    } finally {
+      set({ isLoadingUpdate: false })
+    }
+  },
+  fetchOptionUnit: async () => {
+    try {
+      const response = await getSearchMasterUnit()
+
+      set({ dataOptionUnit: response?.data || null })
+    } catch (err: any) {
+      set({ isError: true, dataOptionUnit: null })
+      useSnackbarStore.getState().showSnackbar(err?.message || 'hapus gagal', 'error')
     } finally {
       set({ isLoadingUpdate: false })
     }

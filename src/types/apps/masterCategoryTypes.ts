@@ -21,6 +21,7 @@ export type MasterCategoryStore = {
   isLoading: boolean
   isError: boolean
   isLoadingUpdate: boolean
+  dataOptionCategory: any
 
   page: number
   limit: number
@@ -33,4 +34,5 @@ export type MasterCategoryStore = {
   fetchMasterCategory: () => Promise<void>
   updateMasterCategory: (data: any, id: string) => Promise<boolean>
   deleteMasterCategory: (id: string) => Promise<boolean>
+  fetchOptionCategory: () => Promise<void>
 }

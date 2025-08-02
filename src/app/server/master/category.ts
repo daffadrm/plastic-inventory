@@ -45,3 +45,9 @@ export const deleteMasterCategory = async (id: string) => {
 
   return response
 }
+
+export const getSearchMasterCategory = async () => {
+  const response = apiService(`${versioning1}/categories/search`, 'GET', null, getHeader())
+
+  return response
+}

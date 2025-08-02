@@ -1,14 +1,13 @@
 export type MasterProductTableType = Partial<{
   id: number
-  name: string
-  category: string
-  satuan: string
-  stock: number
-  selling_price: number
-  purchase_price: number
-  min_stock: number
+  product_name: string
+  category_name: string
+  unit_symbol: string
+  harga_jual: number
+  harga_beli: number
+  minimum_stock: number
   supplier: string
-  status: 'Active' | 'Inactive'
+  updated_at: string
 }>
 
 export type QueryParams = {
@@ -30,8 +29,10 @@ export type MasterProductStore = {
   search: string
   order_column: string
   order_direction: string
+  total_data: number
 
   setQueryParams: (params: Partial<QueryParams>) => void
-  fetchMasterProduct: (id: any) => Promise<void>
+  fetchMasterProduct: () => Promise<void>
   updateMasterProduct: (data: any, id: string) => Promise<boolean>
+  deleteMasterProduct: (id: string) => Promise<boolean>
 }

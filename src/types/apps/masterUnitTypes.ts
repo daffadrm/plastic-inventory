@@ -21,6 +21,7 @@ export type MasterUnitStore = {
   isLoading: boolean
   isError: boolean
   isLoadingUpdate: boolean
+  dataOptionUnit: any
 
   page: number
   limit: number
@@ -33,4 +34,5 @@ export type MasterUnitStore = {
   fetchMasterUnit: () => Promise<void>
   updateMasterUnit: (data: any, id: string) => Promise<boolean>
   deleteMasterUnit: (id: string) => Promise<boolean>
+  fetchOptionUnit: () => Promise<void>
 }

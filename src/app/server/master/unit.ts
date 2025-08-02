@@ -45,3 +45,9 @@ export const deleteMasterUnits = async (id: string) => {
 
   return response
 }
+
+export const getSearchMasterUnit = async () => {
+  const response = apiService(`${versioning1}/units/search`, 'GET', null, getHeader())
+
+  return response
+}

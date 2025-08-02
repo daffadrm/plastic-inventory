@@ -3,12 +3,18 @@ import { create } from 'zustand'
 import { useSnackbarStore } from './snackbarStore'
 
 import type { MasterProductStore, QueryParams } from '@/types/apps/masterProductTypes'
-import { getMasterProductList, updateMasterProduct } from '@/app/server/master/product'
+import {
+  createMasterProduct,
+  deleteMasterProduct,
+  getMasterProductList,
+  updateMasterProduct
+} from '@/app/server/master/product'
 
 export const useMasterProductStore = create<MasterProductStore>((set, get) => ({
   isLoading: false,
   isError: false,
   dataList: null,
+  dataOptionCategory: null,
   isLoadingUpdate: false,
 
   page: 1,
@@ -16,6 +22,7 @@ export const useMasterProductStore = create<MasterProductStore>((set, get) => ({
   search: '',
   order_column: 'username',
   order_direction: 'asc',
+  total_data: 0,
 
   setQueryParams: (params: Partial<QueryParams>) =>
     set(state => ({
@@ -47,7 +54,7 @@ export const useMasterProductStore = create<MasterProductStore>((set, get) => ({
     try {
       const response = await getMasterProductList(finalParams)
 
-      set({ dataList: response?.data || null })
+      set({ dataList: response?.data || null, total_data: response?.meta?.total || 0 })
     } catch (err: any) {
       set({ isError: true })
       set({ dataList: null })
@@ -58,25 +65,50 @@ export const useMasterProductStore = create<MasterProductStore>((set, get) => ({
     }
   },
 
-  updateMasterProduct: async (data: any, id: string) => {
+  updateMasterProduct: async (id: string, data: any) => {
     const { fetchMasterProduct } = get()
 
     set({ isLoadingUpdate: true })
 
     try {
-      const response = await updateMasterProduct(data, id)
+      let response
 
-      useSnackbarStore.getState().showSnackbar(response?.meta?.message || 'update berhasil', 'success')
-      await fetchMasterProduct({ land_id: id })
+      if (id) {
+        response = await updateMasterProduct(id, data)
+      } else {
+        response = await createMasterProduct(data)
+      }
+
+      useSnackbarStore
+        .getState()
+        .showSnackbar(response?.meta?.message || `${id ? 'Update' : 'Tambah'} Produk Berhasil`, 'success')
+      await fetchMasterProduct()
 
       return true
     } catch (err: any) {
       set({ isError: true })
-      useSnackbarStore.getState().showSnackbar(err?.message || 'update gagal', 'error')
+      useSnackbarStore.getState().showSnackbar(err?.message || `${id ? 'Update' : 'Tambah'} Produk Gagal`, 'error')
 
       return false
     } finally {
       set({ isLoadingUpdate: false })
+    }
+  },
+  deleteMasterProduct: async (id: string) => {
+    const { fetchMasterProduct } = get()
+
+    try {
+      const response = await deleteMasterProduct(id)
+
+      useSnackbarStore.getState().showSnackbar(response?.meta?.message || 'hapus berhasil', 'success')
+      await fetchMasterProduct()
+
+      return true
+    } catch (err: any) {
+      set({ isError: true })
+      useSnackbarStore.getState().showSnackbar(err?.message || 'hapus gagal', 'error')
+
+      return false
     }
   }
 }))

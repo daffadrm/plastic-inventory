@@ -7,6 +7,7 @@ import {
   createMasterCategory,
   deleteMasterCategory,
   getMasterCategoryList,
+  getSearchMasterCategory,
   updateMasterCategory
 } from '@/app/server/master/category'
 
@@ -14,6 +15,7 @@ export const useMasterCategoryStore = create<MasterCategoryStore>((set, get) => 
   isLoading: false,
   isError: false,
   dataList: null,
+  dataOptionCategory: null,
   isLoadingUpdate: false,
 
   page: 1,
@@ -108,6 +110,18 @@ export const useMasterCategoryStore = create<MasterCategoryStore>((set, get) => 
       useSnackbarStore.getState().showSnackbar(err?.message || 'hapus gagal', 'error')
 
       return false
+    } finally {
+      set({ isLoadingUpdate: false })
+    }
+  },
+  fetchOptionCategory: async () => {
+    try {
+      const response = await getSearchMasterCategory()
+
+      set({ dataOptionCategory: response?.data || null })
+    } catch (err: any) {
+      set({ isError: true, dataOptionCategory: null })
+      useSnackbarStore.getState().showSnackbar(err?.message || 'hapus gagal', 'error')
     } finally {
       set({ isLoadingUpdate: false })
     }

@@ -34,12 +34,13 @@ import tableStyles from '@core/styles/table.module.css'
 import styles from './styles.module.css'
 import CustomTextField from '@/@core/components/mui/TextField'
 
-import CustomSnackbar from '@/components/snackbar/CustomSnackbar'
 import ModalConfirmationComponent from '@/components/modal/confirmation/ModalConfirmation'
 import useDebounce from '@/@core/hooks/usedebounce'
 import type { MasterProductTableType } from '@/types/apps/masterProductTypes'
 import { useMasterProductStore } from '@/stores/masterProductStore'
 import AddEditProduct from '@/components/modal/master/product/AddEditProduct'
+import { useMasterCategoryStore } from '@/stores/masterCategoryStore'
+import { useMasterUnitsStore } from '@/stores/masterUnitStore'
 
 declare module '@tanstack/table-core' {
   interface FilterFns {
@@ -77,10 +78,6 @@ export const MasterProductOverview = () => {
   const [selectedId, setSelectedId] = useState<any>()
   const [searchValue, setSearchValue] = useState<string>('')
 
-  const [openSnackbar, setOpenSnackbar] = useState<boolean>(false)
-  const [snackbarMessage, setSnackbarMessage] = useState<string>('')
-  const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success')
-
   const {
     dataList,
     isLoading,
@@ -90,23 +87,15 @@ export const MasterProductOverview = () => {
     limit,
     page,
     order_column,
-    search
+    search,
+    deleteMasterProduct
   } = useMasterProductStore()
 
+  const { fetchOptionCategory, dataOptionCategory } = useMasterCategoryStore()
+  const { fetchOptionUnit, dataOptionUnit } = useMasterUnitsStore()
+
+  console.log(dataOptionCategory, 'dataOption')
   console.log(dataList, 'dataList')
-
-  const handleCloseSnackbar = () => {
-    setOpenSnackbar(false)
-  }
-
-  const handleSnackbar = useCallback(
-    (severity: 'success' | 'error', message: string) => {
-      setSnackbarSeverity(severity)
-      setSnackbarMessage(message)
-      setOpenSnackbar(true)
-    },
-    [setOpenSnackbar, setSnackbarMessage, setSnackbarSeverity]
-  )
 
   const handleAddProduct = () => {
     setSelectedProduct(null) // Reset data pengguna
@@ -141,14 +130,12 @@ export const MasterProductOverview = () => {
 
   const handleDeleteProduct = useCallback(() => {
     try {
-      handleSnackbar('success', 'Success Delete Asset Group')
-
+      deleteMasterProduct(selectedId?.id)
       setIsOpenConfirmationModalState(false)
     } catch (err: any) {
-      handleSnackbar('error', 'Error')
       console.error(err)
     }
-  }, [])
+  }, [deleteMasterProduct, selectedId])
 
   const debouncedSearchTerm = useDebounce(searchValue, 500)
 
@@ -161,7 +148,7 @@ export const MasterProductOverview = () => {
   // }, [paramState])
 
   useEffect(() => {
-    fetchMasterProduct({ limit, page, order_column, order_direction })
+    fetchMasterProduct()
   }, [limit, page, order_column, order_direction, search])
 
   useEffect(() => {
@@ -169,6 +156,11 @@ export const MasterProductOverview = () => {
       setProductState(dataList)
     }
   }, [dataList])
+
+  useEffect(() => {
+    fetchOptionCategory()
+    fetchOptionUnit()
+  }, [])
 
   useEffect(() => {
     if (isFirstRender.current) {
@@ -213,40 +205,34 @@ export const MasterProductOverview = () => {
           </div>
         )
       },
-      columnHelper.accessor('name', {
+      columnHelper.accessor('product_name', {
         header: 'Nama',
-        cell: ({ row }) => <Typography className='text-xs'>{`${row.original.name || '-'}`}</Typography>
+        cell: ({ row }) => <Typography className='text-xs'>{`${row.original.product_name || '-'}`}</Typography>
       }),
-      columnHelper.accessor('category', {
+      columnHelper.accessor('category_name', {
         header: 'Kategori',
-        cell: ({ row }) => <Typography className='text-xs'>{`${row.original.category || '-'}`}</Typography>
+        cell: ({ row }) => <Typography className='text-xs'>{`${row.original.category_name || '-'}`}</Typography>
       }),
-      columnHelper.accessor('satuan', {
+      columnHelper.accessor('unit_symbol', {
         header: 'Satuan',
-        cell: ({ row }) => <Typography className='text-xs'>{`${row.original.satuan || '-'}`}</Typography>
+        cell: ({ row }) => <Typography className='text-xs'>{`${row.original.unit_symbol || '-'}`}</Typography>
       }),
-      columnHelper.accessor('stock', {
+      columnHelper.accessor('minimum_stock', {
         header: 'Stok',
         cell: ({ row }) => (
-          <Typography className='text-xs text-right'>{`${row.original.stock?.toLocaleString() || '-'}`}</Typography>
+          <Typography className='text-xs text-right'>{`${row.original.minimum_stock?.toLocaleString() || '-'}`}</Typography>
         )
       }),
-      columnHelper.accessor('selling_price', {
+      columnHelper.accessor('harga_jual', {
         header: 'Harga Jual',
         cell: ({ row }) => (
-          <Typography className='text-xs text-right'>{`Rp. ${row.original.selling_price?.toLocaleString() || '-'}`}</Typography>
+          <Typography className='text-xs text-right'>{`Rp. ${row.original.harga_jual?.toLocaleString() || '-'}`}</Typography>
         )
       }),
-      columnHelper.accessor('purchase_price', {
+      columnHelper.accessor('harga_beli', {
         header: 'Harga Beli',
         cell: ({ row }) => (
-          <Typography className='text-xs text-right'>{`RP. ${row.original.purchase_price?.toLocaleString() || '-'}`}</Typography>
-        )
-      }),
-      columnHelper.accessor('min_stock', {
-        header: 'Min Stok',
-        cell: ({ row }) => (
-          <Typography className='text-xs text-right'>{`${row.original.min_stock?.toLocaleString() || '-'}`}</Typography>
+          <Typography className='text-xs text-right'>{`RP. ${row.original.harga_beli?.toLocaleString() || '-'}`}</Typography>
         )
       })
     ],
@@ -421,12 +407,8 @@ export const MasterProductOverview = () => {
         isEditMode={isEditMode}
         productDetailData={selectedProduct}
         onCancel={handleCloseDialog}
-      />
-      <CustomSnackbar
-        openSnackbar={openSnackbar}
-        snackbarSeverity={snackbarSeverity}
-        snackbarMessage={snackbarMessage}
-        handleCloseSnackbar={handleCloseSnackbar}
+        dataOptionCategory={dataOptionCategory}
+        dataOptionUnit={dataOptionUnit}
       />
       <ModalConfirmationComponent
         isOpen={isOpenConfirmationModalState}
@@ -434,7 +416,7 @@ export const MasterProductOverview = () => {
         title='Hapus Produk'
         warning={
           <>
-            Aksi ini akan menghapus <strong>{selectedId?.name}</strong>. Apakah anda yakin?
+            Aksi ini akan menghapus <strong>{selectedId?.product_name}</strong>. Apakah anda yakin?
           </>
         }
         icon='tabler-trash'

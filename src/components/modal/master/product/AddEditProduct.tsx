@@ -15,44 +15,85 @@ import type { ProductSchema } from '@/schema/masterProductSchema'
 import { productSchema } from '@/schema/masterProductSchema'
 import { useMasterProductStore } from '@/stores/masterProductStore'
 
+interface OptionCategoryType {
+  id: number
+  category_name: string
+  description: string
+  created_at: string
+  is_active: boolean
+  updated_at: string
+}
+
+interface OptionUnitType {
+  id: number
+  unit_name: string
+  unit_symbol: string
+  unit_type: string
+  description: string
+  base_unit: boolean
+  conversion_to_base: number
+  created_at: string
+  updated_at: string
+}
 interface AddEditProductType {
   open: boolean
   isEditMode: boolean
   productDetailData?: any
   onCancel: () => void
+  dataOptionCategory: OptionCategoryType[]
+  dataOptionUnit: OptionUnitType[]
 }
 
-const optionCategory = [
-  {
-    label: 'Kresek',
-    value: 'Kresek'
-  },
-  {
-    label: 'Sterofoam',
-    value: 'Sterofoam'
-  },
-  {
-    label: 'Mika',
-    value: 'Mika'
-  }
-]
+// const optionCategory = [
+//   {
+//     label: 'Kresek',
+//     value: 'Kresek'
+//   },
+//   {
+//     label: 'Sterofoam',
+//     value: 'Sterofoam'
+//   },
+//   {
+//     label: 'Mika',
+//     value: 'Mika'
+//   }
+// ]
 
 export const defaultValues: ProductSchema = {
-  id: 0,
-  name: '',
+  product_name: '',
   category: {
-    label: '',
-    value: ''
+    id: 0,
+    category_name: '',
+    description: '',
+    created_at: '',
+    is_active: false,
+    updated_at: ''
   },
-  satuan: '',
-  stock: 0,
-  selling_price: 0,
-  purchase_price: 0,
-  min_stock: 0
+  unit_symbol: {
+    id: 0,
+    unit_name: '',
+    unit_symbol: '',
+    unit_type: '',
+    base_unit: false,
+    conversion_to_base: 0,
+    description: '',
+    created_at: '',
+    updated_at: ''
+  },
+  minimum_stock: 0,
+  harga_jual: 0,
+  harga_beli: 0
 }
 
-const AddEditProduct = ({ open, isEditMode, productDetailData, onCancel }: AddEditProductType) => {
-  const { updateMasterProduct } = useMasterProductStore()
+const AddEditProduct = ({
+  open,
+  isEditMode,
+  productDetailData,
+  onCancel,
+  dataOptionCategory,
+  dataOptionUnit
+}: AddEditProductType) => {
+  const { updateMasterProduct, isLoadingUpdate } = useMasterProductStore()
   const [isOpenConfirmationModalState, setIsOpenConfirmationModalState] = useState<boolean>(false)
 
   const handleConfirmationModal = () => {
@@ -71,20 +112,45 @@ const AddEditProduct = ({ open, isEditMode, productDetailData, onCancel }: AddEd
   })
 
   const handleSubmitForm = async (dataParam: any) => {
-    console.log(dataParam, 'dataParam')
-    updateMasterProduct(dataParam?.id, dataParam)
-    reset(defaultValues)
-    handleConfirmationModal()
-    onCancel()
+    const payload = {
+      harga_jual: dataParam?.harga_jual || '',
+      harga_beli: dataParam?.harga_beli,
+      product_name: dataParam?.product_name,
+      minimum_stock: dataParam?.minimum_stock,
+      unit_id: dataParam?.unit_symbol.id,
+      category_id: dataParam?.category?.id
+    } as any
+
+    const success = await updateMasterProduct(productDetailData?.id, payload)
+
+    if (success) {
+      reset(defaultValues)
+      handleConfirmationModal()
+      onCancel()
+    }
+  }
+
+  const MAX_SAFE_NUMBER = 9007199254740991
+
+  const handleFormattedChange = (name: string, input: string, onChange: (value: number | null) => void) => {
+    const raw = input.replace(/\D/g, '')
+
+    const numeric = raw ? Number(raw) : 0
+
+    if (numeric !== null && numeric > MAX_SAFE_NUMBER) return
+
+    onChange(numeric)
   }
 
   useEffect(() => {
     if (productDetailData && open) {
       reset({
         ...productDetailData,
-        category: optionCategory.find(
-          category => category.value?.toLowerCase() === productDetailData?.category?.toLowerCase()
-        ) ?? {
+        category: dataOptionCategory.find(category => category.id === productDetailData?.category_id) ?? {
+          label: '',
+          value: ''
+        },
+        unit_symbol: dataOptionUnit.find(category => category.id === productDetailData?.unit_id) ?? {
           label: '',
           value: ''
         }
@@ -92,7 +158,7 @@ const AddEditProduct = ({ open, isEditMode, productDetailData, onCancel }: AddEd
     } else {
       reset(defaultValues)
     }
-  }, [productDetailData, reset, open])
+  }, [productDetailData, reset, open, dataOptionCategory, dataOptionUnit])
 
   return (
     <Dialog open={open} maxWidth='sm' fullWidth>
@@ -104,7 +170,7 @@ const AddEditProduct = ({ open, isEditMode, productDetailData, onCancel }: AddEd
           borderBottom: '2px solid #e0e0e0'
         }}
       >
-        {isEditMode ? 'Edit kategori' : 'Tambah Kategori'}
+        {isEditMode ? 'Edit Produk' : 'Tambah Produk'}
       </DialogTitle>
       <form
         noValidate
@@ -116,7 +182,7 @@ const AddEditProduct = ({ open, isEditMode, productDetailData, onCancel }: AddEd
           <Grid container spacing={6}>
             <Grid item xs={12} sm={12}>
               <Controller
-                name='name'
+                name='product_name'
                 control={control}
                 render={({ field }) => (
                   <CustomTextField
@@ -128,8 +194,8 @@ const AddEditProduct = ({ open, isEditMode, productDetailData, onCancel }: AddEd
                       </>
                     }
                     placeholder={'Kresek'}
-                    error={!!errors.name}
-                    helperText={errors.name?.message}
+                    error={!!errors.product_name}
+                    helperText={errors.product_name?.message}
                   />
                 )}
               />
@@ -137,17 +203,17 @@ const AddEditProduct = ({ open, isEditMode, productDetailData, onCancel }: AddEd
 
             <Grid item xs={12} sm={4}>
               <Controller
-                name={'category'}
+                name='category'
                 control={control}
                 render={({ field }) => (
                   <CustomAutocomplete
                     {...field}
                     fullWidth
-                    options={optionCategory || []}
-                    getOptionLabel={option => option?.label || ''}
-                    value={(field.value && optionCategory.find(opt => opt.value === field.value.value)) || null}
-                    isOptionEqualToValue={(option, value) => option?.value === value?.value}
-                    onChange={(_, value) => field.onChange(value)}
+                    options={dataOptionCategory || []}
+                    getOptionLabel={option => option?.category_name || ''}
+                    value={field.value || null} // langsung gunakan value sebagai object
+                    isOptionEqualToValue={(option, value) => option?.id === value?.id}
+                    onChange={(_, value) => field.onChange(value)} // simpan object, bukan id
                     renderInput={params => (
                       <CustomTextField
                         {...params}
@@ -156,7 +222,7 @@ const AddEditProduct = ({ open, isEditMode, productDetailData, onCancel }: AddEd
                             Kategori <span className='text-red-500'>*</span>
                           </>
                         }
-                        placeholder={'Mika'}
+                        placeholder='Mika'
                         error={!!errors?.category}
                         helperText={errors?.category?.message}
                       />
@@ -167,7 +233,7 @@ const AddEditProduct = ({ open, isEditMode, productDetailData, onCancel }: AddEd
             </Grid>
             <Grid item xs={12} sm={4}>
               <Controller
-                name='stock'
+                name='minimum_stock'
                 control={control}
                 render={({ field }) => (
                   <CustomTextField
@@ -178,16 +244,27 @@ const AddEditProduct = ({ open, isEditMode, productDetailData, onCancel }: AddEd
                         Stok <span className='text-red-500'>*</span>
                       </>
                     }
-                    placeholder={'Kantong plastik berbagai macam ukuran'}
-                    error={!!errors.stock}
-                    helperText={errors.stock?.message}
+                    value={field.value === 0 ? 0 : field.value ?? ''} // pastikan value selalu ada
+                    type='text'
+                    inputMode='numeric'
+                    placeholder={'0'}
+                    error={!!errors.minimum_stock}
+                    helperText={errors.minimum_stock?.message}
+                    onKeyDown={e => {
+                      const invalidChars = ['-', '+', 'e', '.', ',']
+
+                      if (invalidChars.includes(e.key)) {
+                        e.preventDefault()
+                      }
+                    }}
+                    onChange={e => handleFormattedChange('minimum_stock', e.target.value, field.onChange)}
                   />
                 )}
               />
             </Grid>
             <Grid item xs={12} sm={4}>
-              <Controller
-                name='satuan'
+              {/* <Controller
+                name='unit_symbol'
                 control={control}
                 render={({ field }) => (
                   <CustomTextField
@@ -199,15 +276,43 @@ const AddEditProduct = ({ open, isEditMode, productDetailData, onCancel }: AddEd
                       </>
                     }
                     placeholder={'Kantong plastik berbagai macam ukuran'}
-                    error={!!errors.satuan}
-                    helperText={errors.satuan?.message}
+                    error={!!errors.unit_symbol}
+                    helperText={errors.unit_symbol?.message}
+                  />
+                )}
+              /> */}
+              <Controller
+                name='unit_symbol'
+                control={control}
+                render={({ field }) => (
+                  <CustomAutocomplete
+                    {...field}
+                    fullWidth
+                    options={dataOptionUnit || []}
+                    getOptionLabel={option => option?.unit_symbol || ''}
+                    value={field.value || null}
+                    isOptionEqualToValue={(option, value) => option?.id === value?.id}
+                    onChange={(_, value) => field.onChange(value)}
+                    renderInput={params => (
+                      <CustomTextField
+                        {...params}
+                        label={
+                          <>
+                            Satuan <span className='text-red-500'>*</span>
+                          </>
+                        }
+                        placeholder='Mika'
+                        error={!!errors?.unit_symbol}
+                        helperText={errors?.unit_symbol?.message}
+                      />
+                    )}
                   />
                 )}
               />
             </Grid>
             <Grid item xs={12} sm={4}>
               <Controller
-                name='selling_price'
+                name='harga_jual'
                 control={control}
                 render={({ field }) => (
                   <CustomTextField
@@ -218,16 +323,27 @@ const AddEditProduct = ({ open, isEditMode, productDetailData, onCancel }: AddEd
                         Harga Jual <span className='text-red-500'>*</span>
                       </>
                     }
+                    value={field.value === 0 ? 0 : field.value ?? ''} // pastikan value selalu ada
+                    type='text'
+                    inputMode='numeric'
+                    onKeyDown={e => {
+                      const invalidChars = ['-', '+', 'e', '.', ',']
+
+                      if (invalidChars.includes(e.key)) {
+                        e.preventDefault()
+                      }
+                    }}
+                    onChange={e => handleFormattedChange('harga_jual', e.target.value, field.onChange)}
                     placeholder={'Rp. 20.000'}
-                    error={!!errors.selling_price}
-                    helperText={errors.selling_price?.message}
+                    error={!!errors.harga_jual}
+                    helperText={errors.harga_jual?.message}
                   />
                 )}
               />
             </Grid>
             <Grid item xs={12} sm={4}>
               <Controller
-                name='purchase_price'
+                name='harga_beli'
                 control={control}
                 render={({ field }) => (
                   <CustomTextField
@@ -239,28 +355,18 @@ const AddEditProduct = ({ open, isEditMode, productDetailData, onCancel }: AddEd
                       </>
                     }
                     placeholder={'Rp. 5.000'}
-                    error={!!errors.purchase_price}
-                    helperText={errors.purchase_price?.message}
-                  />
-                )}
-              />
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <Controller
-                name='min_stock'
-                control={control}
-                render={({ field }) => (
-                  <CustomTextField
-                    {...field}
-                    fullWidth
-                    label={
-                      <>
-                        Min Stok <span className='text-red-500'>*</span>
-                      </>
-                    }
-                    placeholder={'100'}
-                    error={!!errors.min_stock}
-                    helperText={errors.min_stock?.message}
+                    error={!!errors.harga_beli}
+                    helperText={errors.harga_beli?.message}
+                    type='text'
+                    inputMode='numeric'
+                    onKeyDown={e => {
+                      const invalidChars = ['-', '+', 'e', '.', ',']
+
+                      if (invalidChars.includes(e.key)) {
+                        e.preventDefault()
+                      }
+                    }}
+                    onChange={e => handleFormattedChange('harga_beli', e.target.value, field.onChange)}
                   />
                 )}
               />
@@ -279,13 +385,14 @@ const AddEditProduct = ({ open, isEditMode, productDetailData, onCancel }: AddEd
       <ModalConfirmationComponent
         isOpen={isOpenConfirmationModalState}
         toggle={handleConfirmationModal}
-        title={'Perbarui Data Category'}
+        title={`${isEditMode ? 'Perbarui' : 'Tambah'} Data Produk`}
         warning={'Tindakan ini akan menyimpan perubahan. Apakah Anda yakin ingin melanjutkan?'}
         icon={'tabler-send'}
         actionText={'Simpan'}
         handleClose={() => setIsOpenConfirmationModalState(false)}
         data={productDetailData}
         handleRequest={handleSubmit(formData => handleSubmitForm(formData))}
+        isLoading={isLoadingUpdate}
       />
     </Dialog>
   )

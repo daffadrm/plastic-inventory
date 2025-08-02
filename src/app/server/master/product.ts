@@ -1,4 +1,6 @@
-import { localApiService } from '../localApiService'
+import { apiService, getHeader } from '../apiService'
+
+const versioning1 = process.env.NEXT_PUBLIC_API_V1
 
 export const getMasterProductList = async (params?: {
   page?: number
@@ -15,14 +17,69 @@ export const getMasterProductList = async (params?: {
   if (params?.order_column) query.append('order_column', String(params.order_column))
   if (params?.order_direction) query.append('order_direction', String(params.order_direction))
 
-  const response = await localApiService(`/dummyMasterProduct.json?${query.toString()}`, 'GET', null, () => false)
+  let response
+
+  if (params?.search) {
+    response = apiService(`${versioning1}/products/search/?${query.toString()}`, 'GET', null, getHeader())
+  } else {
+    response = apiService(`${versioning1}/products/list/?${query.toString()}`, 'GET', null, getHeader())
+  }
 
   return response
 }
 
 export const updateMasterProduct = async (id: any, data: any) => {
-  console.log(id, data)
-  const response = await localApiService('/dummyMasterProduct.json', 'GET', null, () => false)
+  const formData = new FormData()
+
+  // Tambahkan semua field dari data ke FormData
+  Object.entries(data).forEach(([key, value]) => {
+    // Jika value adalah array, tambahkan setiap item
+    if (Array.isArray(value)) {
+      value.forEach((v, i) => {
+        formData.append(`${key}[${i}]`, v)
+      })
+    } else {
+      formData.append(key, value as string | Blob)
+    }
+  })
+
+  const headers = {
+    ...getHeader(),
+    'Content-Type': 'multipart/form-data' // opsional, tergantung implementasi apiService
+  }
+
+  const response = await apiService(`${versioning1}/products/${id}`, 'PUT', data, headers)
+
+  return response
+}
+
+export const createMasterProduct = async (data: any) => {
+  const formData = new FormData()
+
+  // Tambahkan semua field dari data ke FormData
+  Object.entries(data).forEach(([key, value]) => {
+    // Jika value adalah array, tambahkan setiap item
+    if (Array.isArray(value)) {
+      value.forEach((v, i) => {
+        formData.append(`${key}[${i}]`, v)
+      })
+    } else {
+      formData.append(key, value as string | Blob)
+    }
+  })
+
+  const headers = {
+    ...getHeader(),
+    'Content-Type': 'multipart/form-data' // opsional, tergantung implementasi apiService
+  }
+
+  const response = await apiService(`${versioning1}/products/create`, 'POST', data, headers)
+
+  return response
+}
+
+export const deleteMasterProduct = async (id: string) => {
+  const response = await apiService(`${versioning1}/products/${id}`, 'DELETE', null, getHeader())
 
   return response
 }
