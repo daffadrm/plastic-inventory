@@ -32,12 +32,12 @@ export default function TransactionTable({ dataTable }: TransactionTableProps) {
             {dataTable?.map((order, index) => (
               <TableRow key={index}>
                 <TableCell>
-                  <div className='text-sm'>{order.date}</div>
+                  <div className='text-xs'>{order.date}</div>
                 </TableCell>
                 <TableCell>
                   <Stack direction='row' spacing={2} alignItems='center'>
                     <Box>
-                      <div className='font-bold tex-sm'>{order.product_name}</div>
+                      <div className='font-bold tex-xs'>{order.product_name}</div>
                       <div className='text-xs' color='text.secondary'>
                         {order.product_description}
                       </div>
@@ -45,13 +45,13 @@ export default function TransactionTable({ dataTable }: TransactionTableProps) {
                   </Stack>
                 </TableCell>
                 <TableCell>
-                  <div className='text-sm'> {order.quantity}</div>
+                  <div className='text-xs'> {order.quantity}</div>
                 </TableCell>
                 <TableCell>
-                  <div className='text-sm'>{order.unit}</div>
+                  <div className='text-xs'>{order.unit}</div>
                 </TableCell>
                 <TableCell>
-                  <div className='text-sm'>Rp {order.price.toLocaleString()}</div>
+                  <div className='text-xs'>Rp {order.price.toLocaleString()}</div>
                 </TableCell>
               </TableRow>
             ))}
