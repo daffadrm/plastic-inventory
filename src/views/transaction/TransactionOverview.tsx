@@ -150,9 +150,9 @@ export const TransactionOverview = () => {
         header: 'quantity',
         cell: ({ row }) => <Typography className='text-xs'>{`${row.original.quantity || '-'}`}</Typography>
       }),
-      columnHelper.accessor('unit_name', {
+      columnHelper.accessor('unit_symbol', {
         header: 'Unit',
-        cell: ({ row }) => <Typography className='text-xs'>{`${row.original.unit_name || '-'}`}</Typography>
+        cell: ({ row }) => <Typography className='text-xs'>{`${row.original.unit_symbol || '-'}`}</Typography>
       }),
 
       columnHelper.accessor('movement_type', {

@@ -12,6 +12,7 @@ export type TransactionTableType = Partial<{
   deleted_at: string | null
   product_name: string
   unit_name: string
+  unit_symbol: string
   username: string
 }>
 
