@@ -57,8 +57,7 @@ export const useMasterCategoryStore = create<MasterCategoryStore>((set, get) => 
 
       set({ dataList: response?.data || null, total_data: response?.meta?.total })
     } catch (err: any) {
-      set({ isError: true })
-      set({ dataList: null })
+      set({ isError: true, dataList: null, total_data: 0 })
 
       useSnackbarStore.getState().showSnackbar(err?.message || 'Something went wrong', 'error')
     } finally {

@@ -90,6 +90,7 @@ export const MasterConversionOverview = () => {
     page,
     order_column,
     search,
+    total_data,
     deleteMasterConversion
   } = useMasterConversionStore()
 
@@ -390,7 +391,14 @@ export const MasterConversionOverview = () => {
               </table>
             </div>
             <TablePagination
-              component={() => <TablePaginationComponent table={table as any} />}
+              component={() => (
+                <TablePaginationComponent
+                  table={table as any}
+                  isManualPagination
+                  totalData={total_data}
+                  setParamState={setQueryParams}
+                />
+              )}
               count={table.getFilteredRowModel().rows.length}
               rowsPerPage={table.getState().pagination.pageSize}
               page={table.getState().pagination.pageIndex}

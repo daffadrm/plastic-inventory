@@ -58,7 +58,7 @@ export const useMasterProductStore = create<MasterProductStore>((set, get) => ({
       set({ dataList: response?.data || null, total_data: response?.meta?.total || 0 })
     } catch (err: any) {
       console.log(err, 'err')
-      set({ isError: true, dataList: null })
+      set({ isError: true, dataList: null, total_data: 0 })
 
       useSnackbarStore.getState().showSnackbar(err?.message || 'Something went wrong', 'error')
     } finally {

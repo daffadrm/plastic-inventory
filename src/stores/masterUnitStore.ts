@@ -57,7 +57,7 @@ export const useMasterUnitsStore = create<MasterUnitStore>((set, get) => ({
 
       set({ dataList: response?.data || null, total_data: response?.meta?.total || 0 })
     } catch (err: any) {
-      set({ isError: true })
+      set({ isError: true, dataList: null, total_data: 0 })
       set({ dataList: null })
 
       useSnackbarStore.getState().showSnackbar(err?.message || 'Something went wrong', 'error')

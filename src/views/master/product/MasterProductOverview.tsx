@@ -88,7 +88,8 @@ export const MasterProductOverview = () => {
     page,
     order_column,
     search,
-    deleteMasterProduct
+    deleteMasterProduct,
+    total_data
   } = useMasterProductStore()
 
   const { fetchOptionCategory, dataOptionCategory } = useMasterCategoryStore()
@@ -393,7 +394,14 @@ export const MasterProductOverview = () => {
               </table>
             </div>
             <TablePagination
-              component={() => <TablePaginationComponent table={table as any} />}
+              component={() => (
+                <TablePaginationComponent
+                  table={table as any}
+                  isManualPagination
+                  totalData={total_data}
+                  setParamState={setQueryParams}
+                />
+              )}
               count={table.getFilteredRowModel().rows.length}
               rowsPerPage={table.getState().pagination.pageSize}
               page={table.getState().pagination.pageIndex}
