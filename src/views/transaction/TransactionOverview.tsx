@@ -161,9 +161,9 @@ export const TransactionOverview = () => {
           <Typography className='text-xs'>{`${row.original.movement_type === 'in' ? 'Masuk' : 'Keluar'}`}</Typography>
         )
       }),
-      columnHelper.accessor('username', {
+      columnHelper.accessor('user_username', {
         header: 'Dibuat oleh',
-        cell: ({ row }) => <Typography className='text-xs'>{`${row.original.username || '-'}`}</Typography>
+        cell: ({ row }) => <Typography className='text-xs'>{`${row.original.user_username || '-'}`}</Typography>
       }),
       columnHelper.accessor('updated_at', {
         header: 'Diperbarui pada',

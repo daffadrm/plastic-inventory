@@ -14,6 +14,7 @@ export type TransactionTableType = Partial<{
   unit_name: string
   unit_symbol: string
   username: string
+  user_username: string
 }>
 
 export type QueryParams = {
