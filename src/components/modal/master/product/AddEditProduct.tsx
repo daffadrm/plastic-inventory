@@ -81,6 +81,7 @@ const AddEditProduct = ({
 }: AddEditProductType) => {
   const { updateMasterProduct, isLoadingUpdate } = useMasterProductStore()
   const [isOpenConfirmationModalState, setIsOpenConfirmationModalState] = useState<boolean>(false)
+  const [dataOptionCategoryFilter, setDataOptionCategoryFilter] = useState<any>(null)
 
   const handleConfirmationModal = () => {
     setIsOpenConfirmationModalState(!isOpenConfirmationModalState)
@@ -133,7 +134,9 @@ const AddEditProduct = ({
     if (productDetailData && open) {
       reset({
         ...productDetailData,
-        category: dataOptionCategory.find(category => category.id === productDetailData?.category_id) ?? {
+        category: dataOptionCategoryFilter.find(
+          (category: { id: any }) => category.id === productDetailData?.category_id
+        ) ?? {
           label: '',
           value: ''
         },
@@ -145,7 +148,11 @@ const AddEditProduct = ({
     } else {
       reset(defaultValues)
     }
-  }, [productDetailData, reset, open, dataOptionCategory, dataOptionUnit])
+  }, [productDetailData, reset, open, dataOptionCategoryFilter, dataOptionUnit])
+
+  useEffect(() => {
+    setDataOptionCategoryFilter(dataOptionCategory?.filter(item => item.is_active))
+  }, [dataOptionCategory])
 
   return (
     <Dialog open={open} maxWidth='sm' fullWidth>
@@ -196,7 +203,7 @@ const AddEditProduct = ({
                   <CustomAutocomplete
                     {...field}
                     fullWidth
-                    options={dataOptionCategory || []}
+                    options={dataOptionCategoryFilter || []}
                     getOptionLabel={option => option?.category_name || ''}
                     value={field.value || null} // langsung gunakan value sebagai object
                     isOptionEqualToValue={(option, value) => option?.id === value?.id}
