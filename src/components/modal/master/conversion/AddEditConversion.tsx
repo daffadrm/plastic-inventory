@@ -183,7 +183,7 @@ const AddEditConversion = ({
           borderBottom: '2px solid #e0e0e0'
         }}
       >
-        {isEditMode ? 'Edit konversi' : 'Tambah konversi'}
+        {isEditMode ? 'Edit Konversi' : 'Tambah Konversi'}
       </DialogTitle>
       <form
         noValidate
@@ -245,7 +245,7 @@ const AddEditConversion = ({
                             Dari Unit <span className='text-red-500'>*</span>
                           </>
                         }
-                        placeholder='Mika'
+                        placeholder='Pack'
                         error={!!errors?.from_unit}
                         helperText={errors?.from_unit?.message}
                       />
@@ -275,7 +275,7 @@ const AddEditConversion = ({
                             Ke Unit <span className='text-red-500'>*</span>
                           </>
                         }
-                        placeholder='Mika'
+                        placeholder='Pcs'
                         error={!!errors?.to_unit}
                         helperText={errors?.to_unit?.message}
                       />
