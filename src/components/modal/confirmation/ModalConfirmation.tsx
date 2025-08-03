@@ -2,6 +2,8 @@ import { useCallback, type FC } from 'react'
 
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText } from '@mui/material'
 
+import { LoadingButton } from '@mui/lab'
+
 import type { ModalConfirmationProps } from '@/types/apps/modalTypes'
 
 const ModalConfirmationComponent: FC<ModalConfirmationProps> = ({
@@ -31,9 +33,17 @@ const ModalConfirmationComponent: FC<ModalConfirmationProps> = ({
         <Button type='button' onClick={handleClose} color='info'>
           Cancel
         </Button>
-        <Button type='button' variant='contained' color='primary' onClick={handleAction} disabled={isLoading}>
+        <LoadingButton
+          className='min-w-[150px]'
+          type='submit'
+          variant='contained'
+          color='primary'
+          loading={isLoading}
+          loadingPosition='start'
+          onClick={handleAction}
+        >
           {actionText ? actionText : 'Deleted'}
-        </Button>
+        </LoadingButton>
       </DialogActions>
     </Dialog>
   )

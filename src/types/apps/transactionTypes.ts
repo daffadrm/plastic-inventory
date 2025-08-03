@@ -28,6 +28,7 @@ export type TransactionStore = {
   dataList: any
   isLoading: boolean
   isError: boolean
+  isLoadingUpdate: boolean
 
   page: number
   limit: number
@@ -38,4 +39,5 @@ export type TransactionStore = {
 
   setQueryParams: (params: Partial<QueryParams>) => void
   fetchTransaction: () => Promise<void>
+  createTransaction: (data: any) => Promise<boolean>
 }

@@ -20,29 +20,35 @@ import {
   Card
 } from '@mui/material'
 
-import { dummyProducts } from './product'
+import { LoadingButton } from '@mui/lab'
+
+// import { dummyProducts } from './product'
 import CustomAutocomplete from '@/@core/components/mui/Autocomplete'
 import CustomTextField from '@/@core/components/mui/TextField'
 import { useSnackbarStore } from '@/stores/snackbarStore'
+import { useMasterProductStore } from '@/stores/masterProductStore'
+import { useTransactionStore } from '@/stores/transactionStore'
 
 type Unit = {
-  id: number
-  name: string
+  unit_id: number
+  unit_symbol: string
 }
 
 type Conversion = {
   from_unit: Unit
   to_unit: Unit
-  multiplier: number
+  conversion_value: number
 }
 
 type Product = {
   id: number
-  name: string
+  product_name: string
   description: string
-  price: number
-  stock: number
   url_image: string
+  unit_id: number
+  harga_jual: number
+  current_stock: number
+  stock: number
   base_unit: Unit
   conversions: Conversion[]
 }
@@ -66,6 +72,15 @@ export default function ItemsOutOverview() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [inputValue, setInputValue] = useState('')
 
+  const { createTransaction, isLoadingUpdate } = useTransactionStore()
+  const { dataOptionProduct, fetchOptionProduct } = useMasterProductStore()
+
+  // console.log(dataOptionProduct, 'dataOptionProduct')
+  // console.log(
+  //   dataOptionProduct?.filter(item => item?.current_stock > 0),
+  //   'filter'
+  // )
+
   //   const token = 'your_token_here'
 
   useEffect(() => {
@@ -75,8 +90,8 @@ export default function ItemsOutOverview() {
     //     })
     //     .then(res => setProducts(res.data))
 
-    setProducts(dummyProducts)
-  }, [])
+    setProducts(dataOptionProduct?.filter((item: any) => item?.current_stock > 0))
+  }, [dataOptionProduct])
 
   const increment = (index: number) => {
     setOrders(prev =>
@@ -87,7 +102,7 @@ export default function ItemsOutOverview() {
         const newQty = item.quantity + 1
         const totalInBase = newQty * multiplier
 
-        if (totalInBase > item.product.stock) {
+        if (totalInBase > item.product.current_stock) {
           useSnackbarStore.getState().showSnackbar('Stok tidak mencukupi.', 'error')
 
           return item
@@ -119,18 +134,28 @@ export default function ItemsOutOverview() {
   const totalPrice = orders.reduce((sum, item) => {
     const multiplier = item.conversion?.multiplier || 1
 
-    return sum + item.quantity * multiplier * item.product.price
+    return sum + item.quantity * multiplier * item.product.harga_jual
   }, 0)
 
   const addProductToOrder = (product: Product) => {
     const index = orders.findIndex(o => o.product.id === product.id)
 
-    const defaultUnit = product.base_unit.name
+    const defaultUnit = product.base_unit.unit_symbol
 
     // Biasanya base unit tidak punya entry konversi dari dirinya sendiri
     const defaultConversion = {
       unit: defaultUnit,
       multiplier: 1
+    }
+
+    const multiplier = defaultConversion.multiplier
+    const newQty = index !== -1 ? orders[index].quantity + 1 : 1
+    const totalInBase = newQty * multiplier
+
+    if (totalInBase > product.current_stock) {
+      useSnackbarStore.getState().showSnackbar('Stok tidak mencukupi.', 'error')
+
+      return
     }
 
     if (index !== -1) {
@@ -148,7 +173,9 @@ export default function ItemsOutOverview() {
     }
   }
 
-  const handleSaveOrder = () => {
+  console.log(orders, 'order')
+
+  const handleSaveOrder = async () => {
     if (orders.length === 0) {
       useSnackbarStore.getState().showSnackbar('Tidak ada transaksi!', 'error')
 
@@ -156,12 +183,18 @@ export default function ItemsOutOverview() {
     }
 
     const payload = orders.map(item => ({
+      type: 'out',
       product_id: item.product.id,
       quantity: item.quantity * (item.conversion?.multiplier || 1),
-      unit: item.unit
+      unit_id: item.product.unit_id
     }))
 
-    setOrders([])
+    const success = await createTransaction(payload)
+
+    if (success) {
+      fetchOptionProduct()
+      setOrders([])
+    }
 
     console.log('Saving order:', payload)
 
@@ -173,13 +206,17 @@ export default function ItemsOutOverview() {
   const isMax = (item: OrderItem) => {
     const multiplier = item.conversion?.multiplier || 1
 
-    return item.quantity * multiplier >= item.product.stock
+    return item.quantity * multiplier >= item.product.current_stock
   }
+
+  useEffect(() => {
+    fetchOptionProduct()
+  }, [])
 
   return (
     <Card className='p-4'>
       <div className='flex flex-row gap-2'>
-        <Typography variant='h6' gutterBottom width={'200px'}>
+        <Typography variant='h6' gutterBottom width={'100px'}>
           List Barang Keluar
         </Typography>
         <CustomAutocomplete
@@ -191,7 +228,7 @@ export default function ItemsOutOverview() {
           onInputChange={(_, newInputValue) => {
             setInputValue(newInputValue)
           }}
-          getOptionLabel={option => option.name}
+          getOptionLabel={option => option.product_name}
           onChange={(_, value) => {
             if (value) {
               addProductToOrder(value)
@@ -199,8 +236,29 @@ export default function ItemsOutOverview() {
               setInputValue('')
             }
           }}
+          renderOption={(props, option) => {
+            return (
+              <li
+                {...props}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-start',
+                  justifyContent: 'flex-start',
+                  padding: '6px 6px'
+                }}
+              >
+                <Typography variant='body1' component='div' sx={{ fontWeight: 'bold' }}>
+                  {option.product_name}
+                </Typography>
+                <Typography variant='body2' color={option.current_stock === 0 ? 'error' : 'text.secondary'}>
+                  Stok: {option.current_stock}
+                </Typography>
+              </li>
+            )
+          }}
           isOptionEqualToValue={(option, value) => option.id === value.id}
-          renderInput={params => <CustomTextField {...params} label='Search Product' fullWidth />}
+          renderInput={params => <CustomTextField {...params} label='Cari Product' fullWidth />}
         />
       </div>
       <TableContainer>
@@ -227,10 +285,10 @@ export default function ItemsOutOverview() {
                       style={{ borderRadius: 4, objectFit: 'cover' }}
                     /> */}
                     <Box>
-                      <Typography fontWeight='bold'>{order.product.name}</Typography>
-                      <Typography variant='body2' color='text.secondary'>
+                      <Typography fontWeight='bold'>{order.product.product_name}</Typography>
+                      {/* <Typography variant='body2' color='text.secondary'>
                         {order.product.description}
-                      </Typography>
+                      </Typography> */}
                     </Box>
                   </Stack>
                 </TableCell>
@@ -256,7 +314,7 @@ export default function ItemsOutOverview() {
                               const totalInBase = value * multiplier
 
                               // Cek jika melebihi stok (hanya untuk barang keluar)
-                              if (totalInBase > item.product.stock) {
+                              if (totalInBase > item.product.current_stock) {
                                 useSnackbarStore.getState().showSnackbar('Stok tidak mencukupi.', 'error')
 
                                 return item
@@ -267,7 +325,7 @@ export default function ItemsOutOverview() {
                           )
                         }
                       }}
-                      sx={{ width: 60, mx: 1 }}
+                      sx={{ width: 100, mx: 1 }}
                     />{' '}
                     <Button size='small' variant='outlined' onClick={() => increment(index)} disabled={isMax(order)}>
                       +
@@ -278,10 +336,10 @@ export default function ItemsOutOverview() {
                   <CustomAutocomplete
                     size='small'
                     options={[
-                      { unit: order.product.base_unit.name, multiplier: 1 }, // base unit
+                      { unit: order.product.base_unit.unit_symbol, multiplier: 1 }, // base unit
                       ...order.product.conversions.map(conv => ({
-                        unit: conv.from_unit.name,
-                        multiplier: conv.multiplier
+                        unit: conv.from_unit.unit_symbol,
+                        multiplier: conv.conversion_value
                       }))
                     ]}
                     getOptionLabel={option => option.unit}
@@ -290,7 +348,7 @@ export default function ItemsOutOverview() {
                       if (value) {
                         const realQty = order.quantity * value.multiplier
 
-                        if (realQty > order.product.stock) {
+                        if (realQty > order.product.current_stock) {
                           useSnackbarStore
                             .getState()
                             .showSnackbar(`Stok tidak mencukupi untuk mengubah ke satuan ${value.unit}.`, 'error')
@@ -308,9 +366,9 @@ export default function ItemsOutOverview() {
                     sx={{ width: 100 }}
                   />
                 </TableCell>
-                <TableCell>Rp {order.product.price.toLocaleString('id-ID')}</TableCell>
+                <TableCell>Rp {order.product.harga_jual.toLocaleString('id-ID')}</TableCell>
                 <TableCell>
-                  Rp {(order.quantity * order.conversion.multiplier * order.product.price).toLocaleString('id-ID')}
+                  Rp {(order.quantity * order.conversion.multiplier * order.product.harga_jual).toLocaleString('id-ID')}
                 </TableCell>
               </TableRow>
             ))}
@@ -322,9 +380,17 @@ export default function ItemsOutOverview() {
         <Typography variant='h6' textAlign={'end'} alignSelf={'center'}>
           Total: Rp {totalPrice.toLocaleString('id-ID')}
         </Typography>
-        <Button variant='contained' color='primary' onClick={handleSaveOrder}>
+        <LoadingButton
+          className='min-w-[150px]'
+          type='submit'
+          variant='contained'
+          color='primary'
+          loading={isLoadingUpdate}
+          loadingPosition='start'
+          onClick={handleSaveOrder}
+        >
           Simpan
-        </Button>
+        </LoadingButton>
       </Box>
 
       {/* Confirm Delete Dialog */}
@@ -332,7 +398,7 @@ export default function ItemsOutOverview() {
         <DialogTitle>Hapus Barang</DialogTitle>
         <DialogContent>
           Apakah anda yakin dengan menghapus barang{' '}
-          {confirmDeleteIndex !== null && orders[confirmDeleteIndex].product.name}?
+          {confirmDeleteIndex !== null && orders[confirmDeleteIndex].product.product_name}?
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setConfirmDeleteIndex(null)}>Batal</Button>

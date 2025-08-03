@@ -8,17 +8,17 @@ export const dummyProducts = [
     price: 25000,
     stock: 10,
     url_image: 'https://source.unsplash.com/100x100/?coffee,arabica',
-    base_unit: { id: 1, name: 'pcs' },
+    base_unit: { unit_id: 1, unit_symbol: 'pcs' },
     conversions: [
       {
-        from_unit: { id: 2, name: 'pak' },
-        to_unit: { id: 1, name: 'pcs' },
-        multiplier: 10
+        from_unit: { unit_id: 2, unit_symbol: 'pak' },
+        to_unit: { unit_id: 1, unit_symbol: 'pcs' },
+        conversion_value: 10
       },
       {
-        from_unit: { id: 3, name: 'dus' },
-        to_unit: { id: 1, name: 'pcs' },
-        multiplier: 20
+        from_unit: { unit_id: 3, unit_symbol: 'dus' },
+        to_unit: { unit_id: 1, unit_symbol: 'pcs' },
+        conversion_value: 20
       }
     ]
   },
@@ -29,13 +29,7 @@ export const dummyProducts = [
     price: 15000,
     stock: 8,
     url_image: 'https://source.unsplash.com/100x100/?tea,green',
-    base_unit: { id: 1, name: 'pcs' },
-    conversions: [
-      {
-        from_unit: { id: 2, name: 'pak' },
-        to_unit: { id: 1, name: 'pcs' },
-        multiplier: 5
-      }
-    ]
+    base_unit: { unit_id: 1, unit_symbol: 'pcs' },
+    conversions: []
   }
 ]

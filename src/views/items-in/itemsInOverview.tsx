@@ -20,28 +20,34 @@ import {
   Card
 } from '@mui/material'
 
-import { dummyProducts } from './product'
+// import { dummyProducts } from './product'
+import { LoadingButton } from '@mui/lab'
+
 import CustomAutocomplete from '@/@core/components/mui/Autocomplete'
 import CustomTextField from '@/@core/components/mui/TextField'
 import { useSnackbarStore } from '@/stores/snackbarStore'
+import { useMasterProductStore } from '@/stores/masterProductStore'
+import { useTransactionStore } from '@/stores/transactionStore'
 
 type Unit = {
-  id: number
-  name: string
+  unit_id: number
+  unit_symbol: string
 }
 
 type Conversion = {
   from_unit: Unit
   to_unit: Unit
-  multiplier: number
+  conversion_value: number
 }
 
 type Product = {
   id: number
-  name: string
+  product_name: string
   description: string
   url_image: string
-  price: number
+  unit_id: number
+  harga_jual: number
+  current_stock: number
   stock: number
   base_unit: Unit
   conversions: Conversion[]
@@ -65,6 +71,9 @@ export default function ItemsInOverview() {
   const [inputValue, setInputValue] = useState('')
 
   const [confirmDeleteIndex, setConfirmDeleteIndex] = useState<number | null>(null)
+  const { dataOptionProduct, fetchOptionProduct } = useMasterProductStore()
+
+  const { createTransaction, isLoadingUpdate } = useTransactionStore()
 
   //   const token = 'your_token_here'
 
@@ -75,8 +84,8 @@ export default function ItemsInOverview() {
     //     })
     //     .then(res => setProducts(res.data))
 
-    setProducts(dummyProducts)
-  }, [])
+    setProducts(dataOptionProduct)
+  }, [dataOptionProduct])
 
   const increment = (index: number) => {
     setOrders(prev =>
@@ -108,12 +117,12 @@ export default function ItemsInOverview() {
     setConfirmDeleteIndex(null)
   }
 
-  const totalPrice = orders.reduce((sum, item) => sum + item.quantity * item.product.price, 0)
+  const totalPrice = orders.reduce((sum, item) => sum + item.quantity * item.product.harga_jual, 0)
 
   const addProductToOrder = (product: Product) => {
     const index = orders.findIndex(o => o.product.id === product.id)
 
-    const defaultUnit = product.base_unit.name
+    const defaultUnit = product?.base_unit?.unit_symbol
 
     // Biasanya base unit tidak punya entry konversi dari dirinya sendiri
     const defaultConversion = {
@@ -136,27 +145,39 @@ export default function ItemsInOverview() {
     }
   }
 
-  const handleSaveOrder = () => {
+  const handleSaveOrder = async () => {
     if (orders.length === 0) {
       useSnackbarStore.getState().showSnackbar('Tidak ada transaksi!', 'error')
 
       return
     }
 
+    console.log(orders, 'orders')
+
     const payload = orders.map(item => ({
+      type: 'in',
+      unit_id: item.product.unit_id,
       product_id: item.product.id,
       quantity: item.quantity * (item.conversion?.multiplier || 1)
     }))
 
     console.log('Saving order:', payload)
+    const success = await createTransaction(payload)
 
-    setOrders([])
+    if (success) {
+      setOrders([])
+      fetchOptionProduct()
+      useSnackbarStore.getState().showSnackbar('Barang berhasil ditambahkan!', 'success')
+    }
 
     // Misal: panggil API di sini
     // await axios.post('/api/orders', { orders: payload })
-
-    useSnackbarStore.getState().showSnackbar('Barang berhasil ditambahkan!', 'success')
   }
+
+  useEffect(() => {
+    fetchOptionProduct()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <Card className='p-4'>
@@ -173,7 +194,7 @@ export default function ItemsInOverview() {
           onInputChange={(_, newInputValue) => {
             setInputValue(newInputValue)
           }}
-          getOptionLabel={option => option.name}
+          getOptionLabel={option => option.product_name}
           onChange={(_, value) => {
             if (value) {
               addProductToOrder(value)
@@ -181,8 +202,29 @@ export default function ItemsInOverview() {
               setInputValue('')
             }
           }}
+          renderOption={(props, option) => {
+            return (
+              <li
+                {...props}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-start',
+                  justifyContent: 'flex-start',
+                  padding: '6px 6px'
+                }}
+              >
+                <Typography variant='body1' component='div' sx={{ fontWeight: 'bold' }}>
+                  {option.product_name}
+                </Typography>
+                <Typography variant='body2' color={option.current_stock === 0 ? 'error' : 'text.secondary'}>
+                  Stok: {option.current_stock}
+                </Typography>
+              </li>
+            )
+          }}
           isOptionEqualToValue={(option, value) => option.id === value.id}
-          renderInput={params => <CustomTextField {...params} label='Search Product' fullWidth />}
+          renderInput={params => <CustomTextField {...params} label='Cari Product' fullWidth />}
         />
       </div>
       <TableContainer>
@@ -201,18 +243,18 @@ export default function ItemsInOverview() {
               <TableRow key={order.product.id}>
                 <TableCell size='small'>
                   <Stack direction='row' spacing={2} alignItems='center'>
-                    <img
+                    {/* <img
                       src={order.product.url_image}
                       alt={order.product.name}
                       width={50}
                       height={50}
                       style={{ borderRadius: 4, objectFit: 'cover' }}
-                    />
+                    /> */}
                     <Box>
-                      <Typography fontWeight='bold'>{order.product.name}</Typography>
-                      <Typography variant='body2' color='text.secondary'>
+                      <Typography fontWeight='bold'>{order.product.product_name}</Typography>
+                      {/* <Typography variant='body2' color='text.secondary'>
                         {order.product.description}
-                      </Typography>
+                      </Typography> */}
                     </Box>
                   </Stack>
                 </TableCell>
@@ -250,10 +292,10 @@ export default function ItemsInOverview() {
                   <CustomAutocomplete
                     size='small'
                     options={[
-                      { unit: order.product.base_unit.name, multiplier: 1 }, // base unit
-                      ...order.product.conversions.map(conv => ({
-                        unit: conv.from_unit.name,
-                        multiplier: conv.multiplier
+                      { unit: order?.product?.base_unit?.unit_symbol, multiplier: 1 }, // base unit
+                      ...order?.product?.conversions?.map(conv => ({
+                        unit: conv?.from_unit?.unit_symbol,
+                        multiplier: conv?.conversion_value
                       }))
                     ]}
                     getOptionLabel={option => option.unit}
@@ -270,9 +312,9 @@ export default function ItemsInOverview() {
                     sx={{ width: 100 }}
                   />
                 </TableCell>
-                <TableCell>Rp {order.product.price.toLocaleString('id-ID')}</TableCell>
+                <TableCell>Rp {order.product.harga_jual.toLocaleString('id-ID')}</TableCell>
                 <TableCell>
-                  Rp {(order.quantity * order.conversion.multiplier * order.product.price).toLocaleString('id-ID')}
+                  Rp {(order.quantity * order.conversion.multiplier * order.product.harga_jual).toLocaleString('id-ID')}
                 </TableCell>{' '}
               </TableRow>
             ))}
@@ -284,9 +326,19 @@ export default function ItemsInOverview() {
         <Typography variant='h6' textAlign={'end'} alignSelf={'center'}>
           Total: Rp {totalPrice.toLocaleString('id-ID')}
         </Typography>
-        <Button variant='contained' color='primary' onClick={handleSaveOrder}>
+        {/* <Button variant='con
+         */}
+        <LoadingButton
+          className='min-w-[150px]'
+          type='submit'
+          variant='contained'
+          color='primary'
+          loading={isLoadingUpdate}
+          loadingPosition='start'
+          onClick={handleSaveOrder}
+        >
           Simpan
-        </Button>
+        </LoadingButton>
       </Box>
 
       {/* Confirm Delete Dialog */}
@@ -294,7 +346,7 @@ export default function ItemsInOverview() {
         <DialogTitle>Hapus Barang</DialogTitle>
         <DialogContent>
           Apakah anda yakin dengan menghapus barang{' '}
-          {confirmDeleteIndex !== null && orders[confirmDeleteIndex].product.name}?
+          {confirmDeleteIndex !== null && orders[confirmDeleteIndex].product.product_name}?
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setConfirmDeleteIndex(null)}>Batal</Button>

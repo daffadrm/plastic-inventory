@@ -3,7 +3,7 @@ import { create } from 'zustand'
 import { useSnackbarStore } from './snackbarStore'
 
 import type { QueryParams, TransactionStore } from '@/types/apps/transactionTypes'
-import { getTransactionList } from '@/app/server/transaction/indesx'
+import { createTransaction, getTransactionList } from '@/app/server/transaction/indesx'
 
 export const useTransactionStore = create<TransactionStore>((set, get) => ({
   isLoading: false,
@@ -56,6 +56,24 @@ export const useTransactionStore = create<TransactionStore>((set, get) => ({
       useSnackbarStore.getState().showSnackbar(err?.message || 'Something went wrong', 'error')
     } finally {
       set({ isLoading: false })
+    }
+  },
+  createTransaction: async (data: string) => {
+    set({ isLoadingUpdate: true })
+
+    try {
+      const response = await createTransaction(data)
+
+      useSnackbarStore.getState().showSnackbar(response?.meta?.message || 'update berhasil', 'success')
+
+      return true
+    } catch (err: any) {
+      set({ isError: true })
+      useSnackbarStore.getState().showSnackbar(err?.message || 'update gagal', 'error')
+
+      return false
+    } finally {
+      set({ isLoadingUpdate: false })
     }
   }
 }))

@@ -118,7 +118,7 @@ export const useMasterProductStore = create<MasterProductStore>((set, get) => ({
 
       set({ dataOptionProduct: response?.data || null })
     } catch (err: any) {
-      set({ isError: true, dataOptionProduct: null })
+      set({ isError: true, dataOptionProduct: [] })
       useSnackbarStore.getState().showSnackbar(err?.message || 'hapus gagal', 'error')
     } finally {
       set({ isLoadingUpdate: false })

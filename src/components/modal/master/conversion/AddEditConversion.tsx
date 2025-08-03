@@ -100,7 +100,7 @@ const AddEditConversion = ({
   dataOptionProduct,
   dataOptionUnit
 }: AddEditCategoryType) => {
-  const { updateMasterConversion } = useMasterConversionStore()
+  const { updateMasterConversion, isLoadingUpdate } = useMasterConversionStore()
   const [isOpenConfirmationModalState, setIsOpenConfirmationModalState] = useState<boolean>(false)
 
   const handleConfirmationModal = () => {
@@ -120,6 +120,8 @@ const AddEditConversion = ({
 
   const handleSubmitForm = async (dataParam: any) => {
     console.log(dataParam, 'dataParam')
+
+    // return
 
     const payload = {
       product_id: dataParam?.product_name?.id || '',
@@ -153,7 +155,7 @@ const AddEditConversion = ({
     if (conversionDetailData && open) {
       reset({
         ...conversionDetailData,
-        product_name: dataOptionProduct?.find(product => product?.id === conversionDetailData?.product?.id) ?? {
+        product_name: dataOptionProduct?.find(product => product?.id === conversionDetailData?.product_id) ?? {
           label: '',
           value: ''
         },
@@ -333,6 +335,7 @@ const AddEditConversion = ({
         handleClose={() => setIsOpenConfirmationModalState(false)}
         data={conversionDetailData}
         handleRequest={handleSubmit(formData => handleSubmitForm(formData))}
+        isLoading={isLoadingUpdate}
       />
     </Dialog>
   )

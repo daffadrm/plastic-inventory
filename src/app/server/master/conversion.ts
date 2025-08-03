@@ -30,7 +30,7 @@ export const getMasterConversionList = async (params?: {
 
 export const updateMasterConversion = async (id: any, data: any) => {
   console.log(id, data)
-  const response = await apiService(`${versioning1}/conversions/${id}`, 'PATCH', data, getHeader())
+  const response = await apiService(`${versioning1}/conversions/${id}`, 'PUT', data, getHeader())
 
   return response
 }

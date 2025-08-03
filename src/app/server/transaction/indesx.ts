@@ -26,3 +26,9 @@ export const getTransactionList = async (params?: {
 
   return response
 }
+
+export const createTransaction = async (data: any) => {
+  const response = await apiService(`${versioning1}/stocks`, 'POST', data, getHeader())
+
+  return response
+}
