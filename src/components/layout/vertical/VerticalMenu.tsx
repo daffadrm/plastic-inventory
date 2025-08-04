@@ -72,10 +72,10 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
         <MenuItem href='/dashboard' icon={<i className='tabler-home' />}>
           Dashboard
         </MenuItem>
-        <MenuItem href='/items-out' icon={<i className='tabler-arrow-narrow-up' />}>
+        <MenuItem href='/items-out' icon={<i className='tabler-shopping-cart' />}>
           Barang Keluar
         </MenuItem>
-        <MenuItem href='/items-in' icon={<i className='tabler-arrow-narrow-down' />}>
+        <MenuItem href='/items-in' icon={<i className='tabler-database-plus' />}>
           Barang Masuk
         </MenuItem>
         <MenuItem href='/history-transaction' icon={<i className='tabler-history' />}>
