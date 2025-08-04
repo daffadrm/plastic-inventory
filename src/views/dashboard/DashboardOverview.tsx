@@ -8,7 +8,6 @@ import { Card, CircularProgress } from '@mui/material'
 import Statistic from './Charts/Statistic'
 import { useChartOptions } from './Charts/optionCharts'
 import BarCharts from './Charts/barCharts'
-import { dummyBarang, dummyChart } from './dummy'
 import TransactionTable from './Table/TransactionTable'
 import { useDashboardStore } from '@/stores/dashboardStore'
 
@@ -48,29 +47,29 @@ export default function DashboardOverview() {
   const cardData: CardData[] = [
     {
       id: 'avg_daily',
-      color: 'success',
-      avatarIcon: 'tabler-user-screen',
+      color: 'primary',
+      avatarIcon: 'tabler-database',
       value: dataList?.statistic?.total_product?.toLocaleString() || 0,
       label: 'Total Produk'
     },
     {
       id: 'avg_monthly',
-      color: 'warning',
-      avatarIcon: 'tabler-chart-bar',
+      color: 'success',
+      avatarIcon: 'tabler-stack-push',
       value: dataList?.statistic?.items_in?.toLocaleString() || 0,
       label: 'Barang Masuk Hari ini'
     },
     {
       id: 'peak_visitor',
-      color: 'primary',
-      avatarIcon: 'tabler-graph',
+      color: 'error',
+      avatarIcon: 'tabler-stack-pop',
       value: dataList?.statistic?.items_out?.toLocaleString() || 0,
       label: `Barang Keluar Hari ini`
     },
     {
       id: 'total_visitor',
       color: 'info',
-      avatarIcon: 'tabler-users',
+      avatarIcon: 'tabler-arrows-up-down',
       value: dataList?.statistic?.total_transaction?.toLocaleString() || 0,
       label: 'Total Transaksi'
     }
@@ -174,7 +173,7 @@ export default function DashboardOverview() {
             <BarCharts
               yAxisType='value'
               xAxisType='category'
-              chartData={dummyChart}
+              chartData={dataList?.total_items_transaction || []}
               positionLabelSeries='top'
               typeData='status'
               gridRight={20}
@@ -188,7 +187,7 @@ export default function DashboardOverview() {
             <BarCharts
               yAxisType='value'
               xAxisType='category'
-              chartData={dummyBarang}
+              chartData={dataList?.total_value_transaction || []}
               positionLabelSeries='top'
               gridBottom={50}
               gridTop={50}
