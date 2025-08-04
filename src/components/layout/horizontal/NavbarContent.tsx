@@ -15,7 +15,7 @@ import useHorizontalNav from '@menu/hooks/useHorizontalNav'
 import { horizontalLayoutClasses } from '@layouts/utils/layoutClasses'
 import Navigation from './Navigation'
 
-import VuexyLogo from '@core/svg/Logo'
+// import VuexyLogo from '@core/svg/Logo'
 
 const NavbarContent = () => {
   // Hooks
@@ -23,8 +23,6 @@ const NavbarContent = () => {
 
   return (
     <div className={classnames(horizontalLayoutClasses.navbarContent, 'flex items-center gap-4 is-full')}>
-      <VuexyLogo width={40} className='text-4xl text-primary mb-2' />
-
       <div className='flex items-center gap-4'>
         <NavToggle />
         {/* Hide Logo on Smaller screens */}

@@ -5,7 +5,7 @@ import { useTheme } from '@mui/material/styles'
 import type { VerticalMenuContextProps } from '@menu/components/vertical-menu/Menu'
 
 // Component Imports
-import HorizontalNav, { Menu, MenuItem } from '@menu/horizontal-menu'
+import HorizontalNav, { Menu, MenuItem, SubMenu } from '@menu/horizontal-menu'
 import VerticalNavContent from './VerticalNavContent'
 
 // Hook Imports
@@ -22,6 +22,7 @@ import menuRootStyles from '@core/styles/horizontal/menuRootStyles'
 import verticalNavigationCustomStyles from '@core/styles/vertical/navigationCustomStyles'
 import verticalMenuItemStyles from '@core/styles/vertical/menuItemStyles'
 import verticalMenuSectionStyles from '@core/styles/vertical/menuSectionStyles'
+import { useUser } from '@/@core/contexts/userContext'
 
 type RenderExpandIconProps = {
   level?: number
@@ -49,6 +50,7 @@ const HorizontalMenu = () => {
   const verticalNavOptions = useVerticalNav()
   const theme = useTheme()
   const { settings } = useSettings()
+  const { dataUser } = useUser()
 
   // Vars
   const { skin } = settings
@@ -82,12 +84,44 @@ const HorizontalMenu = () => {
           menuSectionStyles: verticalMenuSectionStyles(verticalNavOptions, theme)
         }}
       >
-        <MenuItem href='/task-list' icon={<i className='tabler-smart-home' />}>
-          Task List
-        </MenuItem>
-        <MenuItem href='/manage-user' icon={<i className='tabler-users' />}>
-          Manage User
-        </MenuItem>
+        {dataUser?.user?.role === 'admin' && (
+          <MenuItem href='/dashboard' icon={<i className='tabler-home' />}>
+            Beranda
+          </MenuItem>
+        )}
+        {(dataUser?.user?.role === 'admin' || dataUser?.user?.role === 'staff') && (
+          <MenuItem href='/items-out' icon={<i className='tabler-shopping-cart' />}>
+            Barang Keluar
+          </MenuItem>
+        )}
+        {dataUser?.user?.role === 'admin' && (
+          <>
+            <MenuItem href='/items-in' icon={<i className='tabler-database-plus' />}>
+              Barang Masuk
+            </MenuItem>
+            <MenuItem href='/history-transaction' icon={<i className='tabler-history' />}>
+              Riwayat Aktivitas
+            </MenuItem>
+
+            <SubMenu label={'Master'} icon={<i className='tabler-settings' />}>
+              <MenuItem href='/master/product' icon={<i className='tabler-database-star' />}>
+                Produk
+              </MenuItem>
+              <MenuItem href='/master/unit' icon={<i className='tabler-arrows-shuffle' />}>
+                Unit
+              </MenuItem>
+              <MenuItem href='/master/category' icon={<i className='tabler-category' />}>
+                Kategori
+              </MenuItem>
+              <MenuItem href='/master/conversion' icon={<i className='tabler-chart-funnel' />}>
+                Konversi
+              </MenuItem>
+              <MenuItem href='/master/user' icon={<i className='tabler-user' />}>
+                Pengguna
+              </MenuItem>
+            </SubMenu>
+          </>
+        )}
       </Menu>
     </HorizontalNav>
   )

@@ -1,7 +1,6 @@
-// src/components/AuthGuard.tsx
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 
 import { usePathname, useRouter } from 'next/navigation'
 
@@ -10,43 +9,69 @@ import { decryptData } from '@/utils/crypto'
 
 const AuthGuard = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
+  const [checking, setChecking] = useState(true)
   const router = useRouter()
   const pathname = usePathname() || ''
+
+  const isRestrictedForStaff = useCallback((path: string): boolean => {
+    const restrictedPaths = ['/dashboard', '/items-in']
+
+    return restrictedPaths.includes(path) || path.startsWith('/master')
+  }, [])
 
   useEffect(() => {
     const tokenStorage = localStorage.getItem('token')
     const ivStorage = localStorage.getItem('iv')
     const encryptedToken = decryptData(ivStorage || '', tokenStorage || '')
     let token = null
+    let user = null
 
     if (encryptedToken) {
       try {
-        token = encryptedToken ? JSON.parse(encryptedToken)?.token : null
+        const parsed = JSON.parse(encryptedToken)
+
+        token = parsed?.token
+        user = parsed?.user
       } catch (error) {
         localStorage.removeItem('iv')
         localStorage.removeItem('token')
       }
     }
 
-    if (token && pathname === '/login') {
-      // If there's a token and the user is on the login page, redirect to home
-      router.replace('/dashboard')
-    } else if (!token && pathname !== '/login') {
-      // If there's no token and the user is not on the login page, redirect to login
-      router.replace('/login')
+    // Kondisi: tidak ada token dan bukan halaman login
+    if (!token && pathname !== '/login') {
       localStorage.removeItem('iv')
       localStorage.removeItem('token')
-    } else {
-      setIsAuthenticated(false)
-    }
-  }, [router, pathname])
+      router.replace('/login')
 
-  if (isAuthenticated === null) {
-    return (
-      <div>
-        <Loading />
-      </div>
-    ) // Show a loading state while checking authentication
+      return
+    }
+
+    // Kondisi: ada token dan sedang di halaman login
+    if (token && pathname === '/login') {
+      if (user?.role === 'staff') {
+        router.replace('/items-out')
+      } else {
+        router.replace('/dashboard')
+      }
+
+      return
+    }
+
+    // Kondisi: role staff mencoba akses halaman restricted
+    if (token && isRestrictedForStaff(pathname) && user?.role === 'staff') {
+      router.replace('/items-out')
+
+      return
+    }
+
+    setIsAuthenticated(true)
+    setChecking(false)
+  }, [router, pathname, isRestrictedForStaff])
+
+  // Jangan render apa pun sampai proses pengecekan selesai
+  if (checking || isAuthenticated === null) {
+    return <Loading />
   }
 
   return <>{children}</>

@@ -19,6 +19,7 @@ import StyledVerticalNavExpandIcon from '@menu/styles/vertical/StyledVerticalNav
 // Style Imports
 import menuItemStyles from '@core/styles/vertical/menuItemStyles'
 import menuSectionStyles from '@core/styles/vertical/menuSectionStyles'
+import { useUser } from '@/@core/contexts/userContext'
 
 type RenderExpandIconProps = {
   open?: boolean
@@ -38,6 +39,8 @@ const RenderExpandIcon = ({ open, transitionDuration }: RenderExpandIconProps) =
 const VerticalMenu = ({ scrollMenu }: Props) => {
   // Hooks
   const theme = useTheme()
+  const { dataUser } = useUser()
+
   const verticalNavOptions = useVerticalNav()
   const { isBreakpointReached } = useVerticalNav()
 
@@ -69,35 +72,44 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
         renderExpandedMenuItemIcon={{ icon: <i className='tabler-circle text-xs' /> }}
         menuSectionStyles={menuSectionStyles(verticalNavOptions, theme)}
       >
-        <MenuItem href='/dashboard' icon={<i className='tabler-home' />}>
-          Dashboard
-        </MenuItem>
-        <MenuItem href='/items-out' icon={<i className='tabler-shopping-cart' />}>
-          Barang Keluar
-        </MenuItem>
-        <MenuItem href='/items-in' icon={<i className='tabler-database-plus' />}>
-          Barang Masuk
-        </MenuItem>
-        <MenuItem href='/history-transaction' icon={<i className='tabler-history' />}>
-          Riwayat Transaksi
-        </MenuItem>
-        <SubMenu label={'Master'} icon={<i className='tabler-settings' />}>
-          <MenuItem href='/master/product' icon={<i className='tabler-database-star' />}>
-            Produk
+        {dataUser?.user?.role === 'admin' && (
+          <MenuItem href='/dashboard' icon={<i className='tabler-home' />}>
+            Dashboard
           </MenuItem>
-          <MenuItem href='/master/unit' icon={<i className='tabler-arrows-shuffle' />}>
-            Unit
+        )}
+        {(dataUser?.user?.role === 'admin' || dataUser?.user?.role === 'staff') && (
+          <MenuItem href='/items-out' icon={<i className='tabler-shopping-cart' />}>
+            Barang Keluar
           </MenuItem>
-          <MenuItem href='/master/category' icon={<i className='tabler-category' />}>
-            Kategori
-          </MenuItem>
-          <MenuItem href='/master/conversion' icon={<i className='tabler-chart-funnel' />}>
-            Konversi
-          </MenuItem>
-          <MenuItem href='/master/user' icon={<i className='tabler-user' />}>
-            Pengguna
-          </MenuItem>
-        </SubMenu>
+        )}
+        {dataUser?.user?.role === 'admin' && (
+          <>
+            <MenuItem href='/items-in' icon={<i className='tabler-database-plus' />}>
+              Barang Masuk
+            </MenuItem>
+            <MenuItem href='/history-transaction' icon={<i className='tabler-history' />}>
+              Riwayat Transaksi
+            </MenuItem>
+
+            <SubMenu label={'Master'} icon={<i className='tabler-settings' />}>
+              <MenuItem href='/master/product' icon={<i className='tabler-database-star' />}>
+                Produk
+              </MenuItem>
+              <MenuItem href='/master/unit' icon={<i className='tabler-arrows-shuffle' />}>
+                Unit
+              </MenuItem>
+              <MenuItem href='/master/category' icon={<i className='tabler-category' />}>
+                Kategori
+              </MenuItem>
+              <MenuItem href='/master/conversion' icon={<i className='tabler-chart-funnel' />}>
+                Konversi
+              </MenuItem>
+              <MenuItem href='/master/user' icon={<i className='tabler-user' />}>
+                Pengguna
+              </MenuItem>
+            </SubMenu>
+          </>
+        )}
       </Menu>
       {/* <Menu
         popoutMenuOffset={{ mainAxis: 23 }}
