@@ -12,10 +12,12 @@ export const colorTimeBussinees = (typeParam: string) => {
     case 'penjualan':
       return '#59cd90'
 
-    case '1 - 3 days':
-      return '#ffc857'
+    case 'barang masuk':
+      return '#59cd90'
 
     case 'pembelian':
+      return '#d7263d'
+    case 'barang keluar':
       return '#d7263d'
     default:
       return '#defabb'

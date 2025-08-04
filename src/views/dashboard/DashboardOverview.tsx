@@ -71,7 +71,7 @@ export default function DashboardOverview() {
       color: 'info',
       avatarIcon: 'tabler-arrows-up-down',
       value: dataList?.statistic?.total_transaction?.toLocaleString() || 0,
-      label: 'Total Transaksi'
+      label: 'Total Aktivitas Stok Hari ini'
     }
   ]
 
@@ -169,7 +169,7 @@ export default function DashboardOverview() {
             <Statistic statisticData={cardData[3]} />
           </Card>
           <Card className='col-span-6 border row-span-5 px-2 py-2'>
-            <div className='text-sm font-bold'>Transaksi Total Barang</div>
+            <div className='text-sm font-bold'>Aktivitas Stok Mingguan</div>
             <BarCharts
               yAxisType='value'
               xAxisType='category'
@@ -182,7 +182,7 @@ export default function DashboardOverview() {
             />
           </Card>
           <Card className='col-span-6 border row-span-5 px-2 py-2'>
-            <div className='text-sm font-bold'>Total Nilai Penjualan</div>
+            <div className='text-sm font-bold'>Total Nilai Barang Keluar</div>
 
             <BarCharts
               yAxisType='value'
@@ -222,7 +222,7 @@ export default function DashboardOverview() {
           </Card>
 
           <Card className='bg-white col-span-4 border row-span-5 px-2 py-2 h-full'>
-            <div className='text-sm font-bold'>Penjualan Terbaru</div>
+            <div className='text-sm font-bold'>Riwayat Aktivitas Terbaru</div>
             <TransactionTable dataTable={dataList?.history_transaction || []} />
           </Card>
         </>

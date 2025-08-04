@@ -1,13 +1,14 @@
 'use client'
 
 import { Box, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material'
+import moment from 'moment'
 
 interface dataTableType {
   date: string
   product_name: string
   product_description: string
   quantity: number
-  unit: string
+  unit_symbol: string
   price: string
 }
 interface TransactionTableProps {
@@ -32,7 +33,9 @@ export default function TransactionTable({ dataTable }: TransactionTableProps) {
             {dataTable?.map((order, index) => (
               <TableRow key={index}>
                 <TableCell>
-                  <div className='text-xs'>{order.date}</div>
+                  <div className='text-xs'>
+                    {order.date ? moment.utc(order.date).local().format('DD/MM/YYYY, HH:mm') : '-'}
+                  </div>
                 </TableCell>
                 <TableCell>
                   <Stack direction='row' spacing={2} alignItems='center'>
@@ -45,10 +48,10 @@ export default function TransactionTable({ dataTable }: TransactionTableProps) {
                   </Stack>
                 </TableCell>
                 <TableCell>
-                  <div className='text-xs'> {order.quantity}</div>
+                  <div className='text-xs'> {order.quantity || '-'}</div>
                 </TableCell>
                 <TableCell>
-                  <div className='text-xs'>{order.unit}</div>
+                  <div className='text-xs'>{order.unit_symbol || '-'}</div>
                 </TableCell>
                 <TableCell>
                   <div className='text-xs'>Rp {order.price.toLocaleString()}</div>
