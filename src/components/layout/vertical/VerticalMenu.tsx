@@ -90,7 +90,7 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
         {dataUser?.user?.role === 'admin' && (
           <>
             <MenuItem href='/history-transaction' icon={<i className='tabler-history' />}>
-              Riwayat Transaksi
+              Riwayat Aktivitas
             </MenuItem>
 
             <SubMenu label={'Master'} icon={<i className='tabler-settings' />}>
