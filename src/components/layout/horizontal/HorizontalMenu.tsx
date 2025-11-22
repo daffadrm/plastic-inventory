@@ -90,15 +90,17 @@ const HorizontalMenu = () => {
           </MenuItem>
         )}
         {(dataUser?.user?.role === 'admin' || dataUser?.user?.role === 'staff') && (
-          <MenuItem href='/items-out' icon={<i className='tabler-shopping-cart' />}>
-            Barang Keluar
-          </MenuItem>
-        )}
-        {dataUser?.user?.role === 'admin' && (
           <>
+            <MenuItem href='/items-out' icon={<i className='tabler-shopping-cart' />}>
+              Barang Keluar
+            </MenuItem>
             <MenuItem href='/items-in' icon={<i className='tabler-database-plus' />}>
               Barang Masuk
             </MenuItem>
+          </>
+        )}
+        {dataUser?.user?.role === 'admin' && (
+          <>
             <MenuItem href='/history-transaction' icon={<i className='tabler-history' />}>
               Riwayat Aktivitas
             </MenuItem>
