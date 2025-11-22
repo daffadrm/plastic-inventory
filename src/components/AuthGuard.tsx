@@ -14,7 +14,7 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname() || ''
 
   const isRestrictedForStaff = useCallback((path: string): boolean => {
-    const restrictedPaths = ['/dashboard', '/items-in']
+    const restrictedPaths = ['/dashboard']
 
     return restrictedPaths.includes(path) || path.startsWith('/master')
   }, [])
